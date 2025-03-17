@@ -1,0 +1,9 @@
+{
+  "lumoImports" : [ "typography", "color", "spacing", "badge", "utility" ],
+  "assets" : {
+    "@fontsource/dm-sans" : {
+      "*.css" : "@fontsource/dm-sans",
+      "files/*" : "@fontsource/dm-sans/files"
+    }
+  }
+}

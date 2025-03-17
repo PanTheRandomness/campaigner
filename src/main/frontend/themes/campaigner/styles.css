@@ -1,0 +1,12 @@
+@import url('./main-layout.css');
+@import url('./views/home-view.css');
+@import url('./views/register-view.css');
+@import url('./views/login-view.css');
+@import url('./views/campaigns-view.css');
+@import url('./views/events-view.css');
+@import url('./views/encyclopedia-view.css');
+@import url('./views/users-view.css');
+@import url('@fontsource/dm-sans/index.css');    html {
+--lumo-font-family: DM Sans;
+
+    }
