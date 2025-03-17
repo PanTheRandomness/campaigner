@@ -1,5 +1,8 @@
 # Campaigner
 
+<b>Campaigner is a tool for managing D&D (and other TTRPG) campaigns, timelines and worlds.</b>
+__________________________________________________________________________________________________
+
 This project can be used as a starting point to create your own Vaadin application with Spring Boot.
 It contains all the necessary configuration and some placeholder files to get you started.
 
