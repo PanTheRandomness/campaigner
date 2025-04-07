@@ -1,6 +1,7 @@
 package com.example.application.data;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
@@ -12,6 +13,9 @@ public class EventDuration extends AbstractEntity {
     private String endDate;
 
     private int duration;
+
+    @OneToOne(mappedBy = "duration")
+    private Event event;
 
     //Getters & Setters
 

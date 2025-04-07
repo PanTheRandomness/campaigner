@@ -1,6 +1,9 @@
 package com.example.application.data;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
@@ -14,7 +17,11 @@ public class Event extends AbstractEntity {
     private String description;
 
     //TODO: Add EventType
-    //TODO: Add EventDuration
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "event_duration_id", referencedColumnName = "id")
+    private EventDuration duration;
+
     //TODO: Add Place
 
     private boolean reoccurring;
