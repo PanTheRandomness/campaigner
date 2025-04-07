@@ -217,6 +217,5 @@ public class EventsView extends Div implements BeforeEnterObserver {
     private void populateForm(Event value) {
         this.event = value;
         binder.readBean(this.event);
-
     }
 }
