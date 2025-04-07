@@ -5,11 +5,16 @@ import jakarta.validation.constraints.NotNull;
 
 @Entity
 public class World extends AbstractEntity {
+
     @NotNull
     private String worldName;
+
     private String worldDescription;
+
     private String worldHistory;
     //TODO: Add Areas-relation
+
+    // Getters & Setters
 
     public String getWorldName() {
         return worldName;

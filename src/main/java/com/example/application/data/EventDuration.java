@@ -5,10 +5,15 @@ import jakarta.validation.constraints.NotNull;
 
 @Entity
 public class EventDuration extends AbstractEntity {
+
     @NotNull
     private String startDate;
+
     private String endDate;
+
     private int duration;
+
+    //Getters & Setters
 
     public String getStartDate() {
         return startDate;

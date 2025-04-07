@@ -5,12 +5,19 @@ import jakarta.validation.constraints.NotNull;
 
 @Entity
 public class Place extends AbstractEntity {
+
     @NotNull
     private String placeName;
+
     private String placeDescription;
+
     //TODO: Add Area & relation
+
     private String placeHistory;
+
     private boolean privatePlace;
+
+    // Getters & Setters
 
     public String getPlaceName() {
         return placeName;

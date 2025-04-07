@@ -19,16 +19,22 @@ public class User extends AbstractEntity {
 
     @NotNull
     private String username;
+
     private String name;
+
     @JsonIgnore
     private String hashedPassword;
+
     @Enumerated(EnumType.STRING)
     @ElementCollection(fetch = FetchType.EAGER)
     //TODO: GM & Player-roles?
     private Set<Role> roles;
+
     @Lob
     @Column(length = 1000000)
     private byte[] profilePicture;
+
+    // Getters & Setters
 
     public String getUsername() {
         return username;

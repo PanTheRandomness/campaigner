@@ -19,6 +19,8 @@ public class Area extends AbstractEntity {
 
     //TODO: Add Area World & relation
 
+    // Getters & Setters
+
     public String getAreaName() {
         return areaName;
     }

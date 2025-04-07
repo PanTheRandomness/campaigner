@@ -10,12 +10,18 @@ public class Event extends AbstractEntity {
 
     @NotNull
     private String name;
+
     private String description;
+
     //TODO: Add EventType
     //TODO: Add EventDuration
     //TODO: Add Place
+
     private boolean reoccurring;
+
     private boolean private_;
+
+    // Getters & Setters
 
     public String getName() {
         return name;

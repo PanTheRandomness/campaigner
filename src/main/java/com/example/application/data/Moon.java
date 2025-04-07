@@ -19,6 +19,8 @@ public class Moon extends AbstractEntity {
     @JoinColumn(name="calendar_id")
     private Calendar calendar;
 
+    // Getters & Setters
+
     public String getMoonName() {
         return moonName;
     }
