@@ -1,16 +1,19 @@
 package com.example.application.data;
 
 import jakarta.persistence.Entity;
+import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDate;
 
 @Entity
 public class Event extends AbstractEntity {
 
+    @NotNull
     private String name;
     private String description;
-    private String type;
-    private LocalDate time;
-    private String location;
+    //TODO: Add EventType
+    //TODO: Add EventDuration
+    //TODO: Add Place
     private boolean reoccurring;
     private boolean private_;
 
@@ -25,24 +28,6 @@ public class Event extends AbstractEntity {
     }
     public void setDescription(String description) {
         this.description = description;
-    }
-    public String getType() {
-        return type;
-    }
-    public void setType(String type) {
-        this.type = type;
-    }
-    public LocalDate getTime() {
-        return time;
-    }
-    public void setTime(LocalDate time) {
-        this.time = time;
-    }
-    public String getLocation() {
-        return location;
-    }
-    public void setLocation(String location) {
-        this.location = location;
     }
     public boolean isReoccurring() {
         return reoccurring;

@@ -1,4 +1,6 @@
 package com.example.application.data;
 
-public interface MoonRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface MoonRepository extends JpaRepository<Moon, Long> {
 }

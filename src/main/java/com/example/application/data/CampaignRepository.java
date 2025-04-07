@@ -1,4 +1,6 @@
 package com.example.application.data;
 
-public interface CampaignRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CampaignRepository extends JpaRepository<Campaign, Long> {
 }

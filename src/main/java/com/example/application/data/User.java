@@ -9,18 +9,22 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+
 import java.util.Set;
 
 @Entity
 @Table(name = "application_user")
 public class User extends AbstractEntity {
 
+    @NotNull
     private String username;
     private String name;
     @JsonIgnore
     private String hashedPassword;
     @Enumerated(EnumType.STRING)
     @ElementCollection(fetch = FetchType.EAGER)
+    //TODO: GM & Player-roles?
     private Set<Role> roles;
     @Lob
     @Column(length = 1000000)

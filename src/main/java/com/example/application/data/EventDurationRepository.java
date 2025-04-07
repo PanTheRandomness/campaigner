@@ -1,4 +1,6 @@
 package com.example.application.data;
 
-public interface EventDurationRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface EventDurationRepository extends JpaRepository<EventDuration, Long> {
 }

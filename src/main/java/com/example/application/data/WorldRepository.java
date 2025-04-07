@@ -1,4 +1,6 @@
 package com.example.application.data;
 
-public class WorldRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public class WorldRepository /*extends JpaRepository<World, Long> */{
 }

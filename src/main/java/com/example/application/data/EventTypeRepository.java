@@ -1,4 +1,6 @@
 package com.example.application.data;
 
-public interface EventTypeRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface EventTypeRepository extends JpaRepository<EventType, Long> {
 }
