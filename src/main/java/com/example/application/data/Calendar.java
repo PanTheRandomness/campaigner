@@ -1,36 +1,39 @@
 package com.example.application.data;
 
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
 @Entity
 public class Calendar extends AbstractEntity {
+
     @NotNull
     private String calendarName;
-    @NotNull
-    private int monthsInYear;
-    @NotNull
-    private List<String> monthNames;
-    @NotNull
-    private int daysInMonth;
-    @NotNull
-    private int daysInWeek;
-    @NotNull
-    private List<String> weekdayNames;
-    @NotNull
-    private int moonCount;
-    private List<Moon> moons;
-    //Onko String tässä hyvä?
-    @NotNull
-    private String currentDate;
-    @NotNull
-    private int currentYear;
-    @NotNull
-    private String currentYearStartWeekday;
 
-    //TODO: Clear Errors regarding use of List<>
+    private int monthsInYear;
+
+    @ElementCollection
+    private List<String> monthNames;
+
+    private int daysInMonth;
+
+    private int daysInWeek;
+
+    @ElementCollection
+    private List<String> weekdayNames;
+
+    private int moonCount;
+
+    @OneToMany(mappedBy = "calendar")
+    private List<Moon> moons;
+
+    //Onko String tässä hyvä?
+    private String currentDate;
+
+    private int currentYear;
+
+    private String currentYearStartWeekday;
 
     public String getCalendarName() {
         return calendarName;

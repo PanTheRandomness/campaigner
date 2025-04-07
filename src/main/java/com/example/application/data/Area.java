@@ -1,14 +1,20 @@
 package com.example.application.data;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
 public class Area extends AbstractEntity {
-    @NotNull
+
     private String areaName;
+
     private String areaDescription;
+
     private String areaHistory;
+
     private boolean privateArea;
 
     //TODO: Add Area World & relation
