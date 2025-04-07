@@ -1,7 +1,6 @@
 package com.example.application;
 
-import com.example.application.data.CampaignRepository;
-import com.example.application.data.UserRepository;
+import com.example.application.data.repositories.CampaignRepository;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.theme.Theme;

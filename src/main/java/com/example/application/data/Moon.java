@@ -10,7 +10,7 @@ public class Moon extends AbstractEntity {
     private String moonName;
 
     @NotNull
-    private int cycle;
+    private double cycle;
 
     @NotNull
     private int shift;
@@ -29,11 +29,11 @@ public class Moon extends AbstractEntity {
         this.moonName = moonName;
     }
 
-    public int getCycle() {
+    public double getCycle() {
         return cycle;
     }
 
-    public void setCycle(int cycle) {
+    public void setCycle(double cycle) {
         this.cycle = cycle;
     }
 

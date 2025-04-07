@@ -27,10 +27,12 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 @AnonymousAllowed
 public class RegisterView extends Composite<VerticalLayout> {
 
+    //TODO: Add functionality to register
     public RegisterView() {
         VerticalLayout layoutColumn2 = new VerticalLayout();
         H2 h2 = new H2();
         TextField textField = new TextField();
+        TextField nameField = new TextField();
         EmailField emailField = new EmailField();
         PasswordField passwordField = new PasswordField();
         PasswordField passwordField2 = new PasswordField();
@@ -52,6 +54,8 @@ public class RegisterView extends Composite<VerticalLayout> {
         h2.setWidth("max-content");
         textField.setLabel("Username");
         textField.setWidth("min-content");
+        nameField.setLabel("Name");
+        nameField.setWidth("min-content");
         emailField.setLabel("Email");
         emailField.setWidth("min-content");
         passwordField.setLabel("Password");

@@ -23,6 +23,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 @AnonymousAllowed
 public class HomeView extends Composite<VerticalLayout> {
 
+    // TODO: Add content to home page
     public HomeView() {
         VerticalLayout layoutColumn2 = new VerticalLayout();
         H1 h1 = new H1();

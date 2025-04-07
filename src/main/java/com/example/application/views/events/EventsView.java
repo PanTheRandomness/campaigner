@@ -1,6 +1,7 @@
 package com.example.application.views.events;
 
 import com.example.application.data.Event;
+import com.example.application.data.ReoccurrenceType;
 import com.example.application.services.EventService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -30,6 +31,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
 import jakarta.annotation.security.PermitAll;
 import java.util.Optional;
+import java.util.Set;
+
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
@@ -82,12 +85,17 @@ public class EventsView extends Div implements BeforeEnterObserver {
         grid.addColumn("time").setAutoWidth(true);
         grid.addColumn("location").setAutoWidth(true);
         LitRenderer<Event> reoccurringRenderer = LitRenderer.<Event>of(
-                "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
-                .withProperty("icon", reoccurring -> reoccurring.isReoccurring() ? "check" : "minus")
-                .withProperty("color",
-                        reoccurring -> reoccurring.isReoccurring()
-                                ? "var(--lumo-primary-text-color)"
-                                : "var(--lumo-disabled-text-color)");
+                        "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
+                .withProperty("icon", event -> {
+                    Set<ReoccurrenceType> types = event.getReoccurring();
+                    return (types != null && !types.isEmpty() && !types.contains(ReoccurrenceType.NONE)) ? "check" : "minus";
+                })
+                .withProperty("color", event -> {
+                    Set<ReoccurrenceType> types = event.getReoccurring();
+                    return (types != null && !types.isEmpty() && !types.contains(ReoccurrenceType.NONE))
+                            ? "var(--lumo-primary-text-color)"
+                            : "var(--lumo-disabled-text-color)";
+                });
 
         grid.addColumn(reoccurringRenderer).setHeader("Reoccurring").setAutoWidth(true);
 

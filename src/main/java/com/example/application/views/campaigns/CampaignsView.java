@@ -27,6 +27,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 @PermitAll
 public class CampaignsView extends Composite<VerticalLayout> {
 
+    //TODO: Connect tabs
     public CampaignsView() {
         HorizontalLayout layoutRow = new HorizontalLayout();
         Select select = new Select();
@@ -85,8 +86,9 @@ public class CampaignsView extends Composite<VerticalLayout> {
     }
 
     private void setTabsSampleData(Tabs tabs) {
-        tabs.add(new Tab("Dashboard"));
-        tabs.add(new Tab("Payment"));
-        tabs.add(new Tab("Shipping"));
+        tabs.add(new Tab("Overview"));
+        tabs.add(new Tab("Timeline"));
+        tabs.add(new Tab("Players"));
+        tabs.add(new Tab("World"));
     }
 }

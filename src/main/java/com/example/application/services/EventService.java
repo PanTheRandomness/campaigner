@@ -1,7 +1,7 @@
 package com.example.application.services;
 
 import com.example.application.data.Event;
-import com.example.application.data.EventRepository;
+import com.example.application.data.repositories.EventRepository;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
