@@ -15,7 +15,7 @@ public class EventType extends AbstractEntity {
     @NotNull
     private String eventColour;
 
-    @OneToMany(mappedBy = "eventType")
+    @OneToMany(mappedBy = "type")
     private List<Event> events;
 
     //Getters & Setters

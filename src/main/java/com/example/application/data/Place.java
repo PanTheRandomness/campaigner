@@ -3,7 +3,10 @@ package com.example.application.data;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
+
+import java.util.List;
 
 @Entity
 public class Place extends AbstractEntity {
@@ -20,6 +23,9 @@ public class Place extends AbstractEntity {
     private String placeHistory;
 
     private boolean privatePlace;
+
+    @OneToMany(mappedBy = "place")
+    private List<Event> events;
 
     // Getters & Setters
 
@@ -61,5 +67,13 @@ public class Place extends AbstractEntity {
 
     public void setPrivatePlace(boolean privatePlace) {
         this.privatePlace = privatePlace;
+    }
+
+    public List<Event> getEvents() {
+        return events;
+    }
+
+    public void setEvents(List<Event> events) {
+        this.events = events;
     }
 }

@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.time.LocalDate;
-
 @Entity
 public class Event extends AbstractEntity {
 
@@ -17,13 +15,15 @@ public class Event extends AbstractEntity {
     @ManyToOne
     @JoinColumn(name = "eventtype_id")
     @ColumnDefault("1")
-    private EventType eventType;
+    private EventType type;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "event_duration_id", referencedColumnName = "id")
     private EventDuration duration;
 
-    //TODO: Add Place
+    @ManyToOne
+    @JoinColumn(name = "place_id")
+    private Place place;
 
     private boolean reoccurring;
 
@@ -47,12 +47,12 @@ public class Event extends AbstractEntity {
         this.description = description;
     }
 
-    public EventType getEventType() {
-        return eventType;
+    public EventType getType() {
+        return type;
     }
 
-    public void setEventType(EventType eventType) {
-        this.eventType = eventType;
+    public void setType(EventType eventType) {
+        this.type = eventType;
     }
 
     public EventDuration getDuration() {
@@ -61,6 +61,14 @@ public class Event extends AbstractEntity {
 
     public void setDuration(EventDuration duration) {
         this.duration = duration;
+    }
+
+    public Place getPlace() {
+        return place;
+    }
+
+    public void setPlace(Place place) {
+        this.place = place;
     }
 
     public boolean isReoccurring() {
