@@ -1,9 +1,6 @@
 package com.example.application.data;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 
 import java.util.List;
 
@@ -25,10 +22,23 @@ public class Campaign extends AbstractEntity {
     @OneToMany(mappedBy = "campaign")
     private List<Event> events;
 
-    //TODO: Add GM (User) & relation
-    //TODO: Add Player & M2M-relation
+    @ManyToMany
+    @JoinTable(
+            name = "campaign_gms",
+            joinColumns = @JoinColumn(name = "campaign_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> gms;
 
-    //TODO: Add NPCs, Organizations, Monsters, Items
+    @ManyToMany
+    @JoinTable(
+            name = "campaign_players",
+            joinColumns = @JoinColumn(name = "campaign_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> players;
+
+    //TODO: Add PCs, NPCs, Organizations, Monsters, Items
 
     // Getters & Setters
 
@@ -62,5 +72,29 @@ public class Campaign extends AbstractEntity {
 
     public void setCampaignWorld(World campaignWorld) {
         this.campaignWorld = campaignWorld;
+    }
+
+    public List<Event> getEvents() {
+        return events;
+    }
+
+    public void setEvents(List<Event> events) {
+        this.events = events;
+    }
+
+    public List<User> getGms() {
+        return gms;
+    }
+
+    public void setGms(List<User> gms) {
+        this.gms = gms;
+    }
+
+    public List<User> getPlayers() {
+        return players;
+    }
+
+    public void setPlayers(List<User> players) {
+        this.players = players;
     }
 }
