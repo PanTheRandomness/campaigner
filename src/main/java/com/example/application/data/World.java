@@ -19,7 +19,8 @@ public class World extends AbstractEntity {
     @OneToMany(mappedBy = "world")
     private List<Area> areas;
 
-    //TODO: Add Campaign-relation
+    @OneToMany(mappedBy = "campaignWorld")
+    private List<Campaign> campaigns;
 
     // Getters & Setters
 
