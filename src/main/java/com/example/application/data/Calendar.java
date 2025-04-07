@@ -36,6 +36,9 @@ public class Calendar extends AbstractEntity {
     @Lob
     private String donjonJson;
 
+    @OneToMany(mappedBy = "calendar")
+    private List<Campaign> campaigns;
+
     // Getters & Setters
 
     public String getCalendarName() {
@@ -124,5 +127,13 @@ public class Calendar extends AbstractEntity {
 
     public void setDonjonJson(String donjonJson) {
         this.donjonJson = donjonJson;
+    }
+
+    public List<Campaign> getCampaigns() {
+        return campaigns;
+    }
+
+    public void setCampaigns(List<Campaign> campaigns) {
+        this.campaigns = campaigns;
     }
 }

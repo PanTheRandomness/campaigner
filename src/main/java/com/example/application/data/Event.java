@@ -13,6 +13,10 @@ public class Event extends AbstractEntity {
     private String description;
 
     @ManyToOne
+    @JoinColumn(name = "campaign_id")
+    private Campaign campaign;
+
+    @ManyToOne
     @JoinColumn(name = "eventtype_id")
     @ColumnDefault("1")
     private EventType type;
@@ -45,6 +49,14 @@ public class Event extends AbstractEntity {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Campaign getCampaign() {
+        return campaign;
+    }
+
+    public void setCampaign(Campaign campaign) {
+        this.campaign = campaign;
     }
 
     public EventType getType() {

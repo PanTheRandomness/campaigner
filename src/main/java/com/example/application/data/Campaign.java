@@ -3,6 +3,9 @@ package com.example.application.data;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+
+import java.util.List;
 
 @Entity
 public class Campaign extends AbstractEntity {
@@ -11,13 +14,17 @@ public class Campaign extends AbstractEntity {
 
     private String campaignDescription;
 
-    //TODO: Add Calendar & relation
+    @ManyToOne
+    @JoinColumn(name = "calendar_id")
+    private Calendar calendar;
 
     @ManyToOne
     @JoinColumn(name = "world_id")
     private World campaignWorld;
 
-    //TODO: Add Events & M2M-relation
+    @OneToMany(mappedBy = "campaign")
+    private List<Event> events;
+
     //TODO: Add GM (User) & relation
     //TODO: Add Player & M2M-relation
 
@@ -39,6 +46,14 @@ public class Campaign extends AbstractEntity {
 
     public void setCampaignDescription(String campaignDescription) {
         this.campaignDescription = campaignDescription;
+    }
+
+    public Calendar getCalendar() {
+        return calendar;
+    }
+
+    public void setCalendar(Calendar calendar) {
+        this.calendar = calendar;
     }
 
     public World getCampaignWorld() {
