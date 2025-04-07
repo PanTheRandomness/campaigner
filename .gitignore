@@ -22,3 +22,5 @@ webpack.generated.js
 
 # Ignore .env file containing sensitive data
 .env
+
+/.vaadin-node-tasks.lock

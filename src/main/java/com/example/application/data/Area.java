@@ -23,7 +23,7 @@ public class Area extends AbstractEntity {
     private boolean privateArea;
 
     @OneToMany(mappedBy = "area")
-    private List<Area> places;
+    private List<Place> places;
 
     // Getters & Setters
 
@@ -67,11 +67,11 @@ public class Area extends AbstractEntity {
         this.privateArea = privateArea;
     }
 
-    public List<Area> getPlaces() {
+    public List<Place> getPlaces() {
         return places;
     }
 
-    public void setPlaces(List<Area> places) {
+    public void setPlaces(List<Place> places) {
         this.places = places;
     }
 }

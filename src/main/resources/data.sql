@@ -1,6 +1,6 @@
-insert into application_user (version, id, username,name,hashed_password,profile_picture) values (1, '1','user','John Normal','$2a$10$xdbKoM48VySZqVSU/cSlVeJn0Z04XCZ7KZBjUBC00eKo5uLswyOpe','')
+insert into application_user (version, id, username,name,email,hashed_password,profile_picture) values (1, '1','user','John Normal','john.normal@email.com','$2a$10$xdbKoM48VySZqVSU/cSlVeJn0Z04XCZ7KZBjUBC00eKo5uLswyOpe','')
 insert into user_roles (user_id, roles) values ('1', 'USER')
-insert into application_user (version, id, username,name,hashed_password,profile_picture) values (1, '2','admin','Emma Executive','$2a$10$jpLNVNeA7Ar/ZQ2DKbKCm.MuT2ESe.Qop96jipKMq7RaUgCoQedV.','')
+insert into application_user (version, id, username,name,email,hashed_password,profile_picture) values (1, '2','admin','Emma Executive','emma.exclusive@email.com','$2a$10$jpLNVNeA7Ar/ZQ2DKbKCm.MuT2ESe.Qop96jipKMq7RaUgCoQedV.','')
 insert into user_roles (user_id, roles) values ('2', 'USER')
 insert into user_roles (user_id, roles) values ('2', 'ADMIN')
 insert into event(version, id,name,description,type,time,location,reoccurring,private) values (1, 1,'jigrormo','Merormo vifeko nevewof cirip pos wive hetoc bipace zuomiti ki ewepi pizalane kaki evenogepe efazuga gamfow.','jigrormo','1955-08-11','Wekviwik',false,false)
