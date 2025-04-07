@@ -28,12 +28,15 @@ public class Calendar extends AbstractEntity {
     @OneToMany(mappedBy = "calendar")
     private List<Moon> moons;
 
-    //Onko String tässä hyvä?
-    private String currentDate;
+    @Embedded
+    private CalendarDate currentDate;
 
-    private int currentYear;
+    private int currentYearStartDay;
 
-    private String currentYearStartWeekday;
+    @Lob
+    private String donjonJson;
+
+    // Getters & Setters
 
     public String getCalendarName() {
         return calendarName;
@@ -99,27 +102,19 @@ public class Calendar extends AbstractEntity {
         this.moonCount = moonCount;
     }
 
-    public String getCurrentDate() {
+    public CalendarDate getCurrentDate() {
         return currentDate;
     }
 
-    public void setCurrentDate(String currentDate) {
+    public void setCurrentDate(CalendarDate currentDate) {
         this.currentDate = currentDate;
     }
 
-    public int getCurrentYear() {
-        return currentYear;
+    public int getCurrentYearStartDay() {
+        return currentYearStartDay;
     }
 
-    public void setCurrentYear(int currentYear) {
-        this.currentYear = currentYear;
-    }
-
-    public String getCurrentYearStartWeekday() {
-        return currentYearStartWeekday;
-    }
-
-    public void setCurrentYearStartWeekday(String currentYearStartWeekday) {
-        this.currentYearStartWeekday = currentYearStartWeekday;
+    public void setCurrentYearStartDay(int currentYearStartWeekday) {
+        this.currentYearStartDay = currentYearStartWeekday;
     }
 }
