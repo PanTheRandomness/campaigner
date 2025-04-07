@@ -1,6 +1,8 @@
 package com.example.application.data;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
@@ -11,7 +13,9 @@ public class Place extends AbstractEntity {
 
     private String placeDescription;
 
-    //TODO: Add Area & relation
+    @ManyToOne
+    @JoinColumn(name = "area_id")
+    private Area area;
 
     private String placeHistory;
 
@@ -33,6 +37,14 @@ public class Place extends AbstractEntity {
 
     public void setPlaceDescription(String placeDescription) {
         this.placeDescription = placeDescription;
+    }
+
+    public Area getArea() {
+        return area;
+    }
+
+    public void setArea(Area area) {
+        this.area = area;
     }
 
     public String getPlaceHistory() {

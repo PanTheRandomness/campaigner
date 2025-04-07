@@ -3,6 +3,9 @@ package com.example.application.data;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+
+import java.util.List;
 
 @Entity
 public class Area extends AbstractEntity {
@@ -19,7 +22,8 @@ public class Area extends AbstractEntity {
 
     private boolean privateArea;
 
-    //TODO: Add Place-relation
+    @OneToMany(mappedBy = "area")
+    private List<Area> places;
 
     // Getters & Setters
 
@@ -47,11 +51,27 @@ public class Area extends AbstractEntity {
         this.areaHistory = areaHistory;
     }
 
+    public World getWorld() {
+        return world;
+    }
+
+    public void setWorld(World world) {
+        this.world = world;
+    }
+
     public boolean isPrivateArea() {
         return privateArea;
     }
 
     public void setPrivateArea(boolean privateArea) {
         this.privateArea = privateArea;
+    }
+
+    public List<Area> getPlaces() {
+        return places;
+    }
+
+    public void setPlaces(List<Area> places) {
+        this.places = places;
     }
 }
