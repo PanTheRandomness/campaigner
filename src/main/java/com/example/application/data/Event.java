@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.Set;
+
 @Entity
 public class Event extends AbstractEntity {
 
@@ -29,7 +31,9 @@ public class Event extends AbstractEntity {
     @JoinColumn(name = "place_id")
     private Place place;
 
-    private boolean reoccurring;
+    @Enumerated(EnumType.STRING)
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<ReoccurrenceType> reoccurring;
 
     private boolean private_;
 
@@ -83,11 +87,11 @@ public class Event extends AbstractEntity {
         this.place = place;
     }
 
-    public boolean isReoccurring() {
+    public Set<ReoccurrenceType> getReoccurring() {
         return reoccurring;
     }
 
-    public void setReoccurring(boolean reoccurring) {
+    public void setReoccurring(Set<ReoccurrenceType> reoccurring) {
         this.reoccurring = reoccurring;
     }
 
