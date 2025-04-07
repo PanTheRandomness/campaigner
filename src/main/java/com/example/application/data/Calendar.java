@@ -117,4 +117,12 @@ public class Calendar extends AbstractEntity {
     public void setCurrentYearStartDay(int currentYearStartWeekday) {
         this.currentYearStartDay = currentYearStartWeekday;
     }
+
+    public String getDonjonJson() {
+        return donjonJson;
+    }
+
+    public void setDonjonJson(String donjonJson) {
+        this.donjonJson = donjonJson;
+    }
 }

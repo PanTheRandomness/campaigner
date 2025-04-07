@@ -1,7 +1,10 @@
 package com.example.application.data;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
+
+import java.util.List;
 
 @Entity
 public class EventType extends AbstractEntity {
@@ -12,7 +15,8 @@ public class EventType extends AbstractEntity {
     @NotNull
     private String eventColour;
 
-    //TODO: Add Event-relation (M2M)
+    @OneToMany(mappedBy = "eventType")
+    private List<Event> events;
 
     //Getters & Setters
 
@@ -30,5 +34,13 @@ public class EventType extends AbstractEntity {
 
     public void setEventColour(String eventColour) {
         this.eventColour = eventColour;
+    }
+
+    public List<Event> getEvents() {
+        return events;
+    }
+
+    public void setEvents(List<Event> events) {
+        this.events = events;
     }
 }

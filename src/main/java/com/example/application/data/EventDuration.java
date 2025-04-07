@@ -42,4 +42,12 @@ public class EventDuration extends AbstractEntity {
     public void setDuration(int duration) {
         this.duration = duration;
     }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public void setEvent(Event event) {
+        this.event = event;
+    }
 }
