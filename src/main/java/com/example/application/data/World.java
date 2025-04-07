@@ -1,7 +1,10 @@
 package com.example.application.data;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
+
+import java.util.List;
 
 @Entity
 public class World extends AbstractEntity {
@@ -12,7 +15,11 @@ public class World extends AbstractEntity {
     private String worldDescription;
 
     private String worldHistory;
-    //TODO: Add Areas-relation
+
+    @OneToMany(mappedBy = "world")
+    private List<Area> areas;
+
+    //TODO: Add Campaign-relation
 
     // Getters & Setters
 

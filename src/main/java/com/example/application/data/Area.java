@@ -1,10 +1,8 @@
 package com.example.application.data;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotNull;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Area extends AbstractEntity {
@@ -15,9 +13,13 @@ public class Area extends AbstractEntity {
 
     private String areaHistory;
 
+    @ManyToOne
+    @JoinColumn(name = "world_id")
+    private World world;
+
     private boolean privateArea;
 
-    //TODO: Add Area World & relation
+    //TODO: Add Place-relation
 
     // Getters & Setters
 
