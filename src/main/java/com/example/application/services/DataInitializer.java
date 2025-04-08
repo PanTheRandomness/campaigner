@@ -3,6 +3,7 @@ package com.example.application.services;
 import com.example.application.data.*;
 import com.example.application.data.repositories.*;
 import jakarta.annotation.PostConstruct;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -89,7 +90,9 @@ public class DataInitializer {
                 gm.setUsername("gm");
                 gm.setName("Game Master");
                 gm.setEmail("gm@example.com");
-                gm.setHashedPassword("salattu");
+                BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+                String hash = encoder.encode("admin"); //changing password is recommended
+                gm.setHashedPassword(hash);
                 gm.setRoles(Set.of(Role.ADMIN));
                 userRepository.save(gm);
 
@@ -97,7 +100,8 @@ public class DataInitializer {
                 player.setUsername("pelaaja");
                 player.setName("Maija Pelaaja");
                 player.setEmail("pelaaja@example.com");
-                player.setHashedPassword("salattu");
+                String hash2 = encoder.encode("test"); //changing password is recommended
+                player.setHashedPassword(hash2);
                 player.setRoles(Set.of(Role.USER));
                 userRepository.save(player);
 
