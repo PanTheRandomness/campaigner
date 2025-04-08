@@ -20,7 +20,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
 @PageTitle("Home")
 @Route("")
-@Menu(order = 0, icon = LineAwesomeIconUrl.PENCIL_RULER_SOLID)
+@Menu(order = 0, icon = LineAwesomeIconUrl.HOME_SOLID)
 @AnonymousAllowed
 public class HomeView extends Composite<VerticalLayout> {
 
@@ -30,19 +30,19 @@ public class HomeView extends Composite<VerticalLayout> {
         H1 h1 = new H1("Welcome to Campaigner");
         VerticalLayout layoutColumn3 = new VerticalLayout();
         FormLayout formLayout3Col = new FormLayout();
-        H3 h3 = new H3("Manage Campaigns");
-        H3 h32 = new H3("Keep track of your plot with timelines");
-        H3 h33 = new H3("Keep notes with Encyclopedia");
+        H3 campiaignH3 = new H3("Manage Campaigns");
+        H3 timelineH3 = new H3("Keep track of your plot with timelines");
+        H3 encyclopediaH3 = new H3("Keep notes with Encyclopedia");
 
-        Paragraph textMedium = new Paragraph();
-        Paragraph textMedium2 = new Paragraph();
-        Paragraph textMedium3 = new Paragraph();
+        Paragraph campaignsText = new Paragraph();
+        Paragraph timelineText = new Paragraph();
+        Paragraph encyclopediaText = new Paragraph();
 
         HorizontalLayout layoutRow = new HorizontalLayout();
         VerticalLayout layoutColumn4 = new VerticalLayout();
         HorizontalLayout layoutRow2 = new HorizontalLayout();
 
-        //TODO: If logged in, display welcome message to user instead
+        // TODO: Conditional Buttons/Welcome text
         Button registerButton = new Button("Register");
         Paragraph orText = new Paragraph();
         Button loginButton = new Button("login");
@@ -51,37 +51,51 @@ public class HomeView extends Composite<VerticalLayout> {
         HorizontalLayout layoutRow3 = new HorizontalLayout();
         Paragraph footerText = new Paragraph();
         getContent().setWidth("100%");
+
+        if (UI.getCurrent().getSession().getAttribute("user") != null) {
+            String username = (String) UI.getCurrent().getSession().getAttribute("user");
+            welcomeText.setText("Welcome back " + username + "!");
+            layoutRow2.add(welcomeText);
+        } else {
+            layoutRow2.add(registerButton, orText, loginButton, welcomeText);
+        }
+
         getContent().getStyle().set("flex-grow", "1");
+
         layoutColumn2.setWidth("100%");
         layoutColumn2.getStyle().set("flex-grow", "1");
+
         h1.setText("Welcome to Campaigner");
         h1.setWidth("max-content");
+
         layoutColumn3.setWidthFull();
         layoutColumn2.setFlexGrow(1.0, layoutColumn3);
         layoutColumn3.setWidth("100%");
         layoutColumn3.getStyle().set("flex-grow", "1");
+
         formLayout3Col.setWidth("100%");
         formLayout3Col.setResponsiveSteps(new ResponsiveStep("0", 1), new ResponsiveStep("250px", 2),
                 new ResponsiveStep("500px", 3));
 
-        h3.setText("Manage Campaigns");
-        h3.setWidth("max-content");
-        h32.setText("Keep track of your plot with timelines");
-        h32.setWidth("max-content");
-        h33.setText("Keep notes with Encyclopedia");
-        h33.setWidth("max-content");
-        textMedium.setText(
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
-        textMedium.setWidth("100%");
-        textMedium.getStyle().set("font-size", "var(--lumo-font-size-m)");
-        textMedium2.setText(
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
-        textMedium2.setWidth("100%");
-        textMedium2.getStyle().set("font-size", "var(--lumo-font-size-m)");
-        textMedium3.setText(
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
-        textMedium3.setWidth("100%");
-        textMedium3.getStyle().set("font-size", "var(--lumo-font-size-m)");
+        campiaignH3.setText("Manage Campaigns");
+        campiaignH3.setWidth("max-content");
+        timelineH3.setText("Keep track of your plot with timelines");
+        timelineH3.setWidth("max-content");
+        encyclopediaH3.setText("Keep notes with Encyclopedia");
+        encyclopediaH3.setWidth("max-content");
+
+        campaignsText.setText(
+                "Manage all of your campaigns conveniently in one place!");
+        campaignsText.setWidth("100%");
+        campaignsText.getStyle().set("font-size", "var(--lumo-font-size-m)");
+        timelineText.setText(
+                "Create new events or modify old ones. Keep track of important plot points visually.");
+        timelineText.setWidth("100%");
+        timelineText.getStyle().set("font-size", "var(--lumo-font-size-m)");
+        encyclopediaText.setText(
+                "Never forget key pieces information about your world's history or geography.");
+        encyclopediaText.setWidth("100%");
+        encyclopediaText.getStyle().set("font-size", "var(--lumo-font-size-m)");
 
         layoutRow.setWidthFull();
         layoutColumn3.setFlexGrow(1.0, layoutRow);
@@ -127,19 +141,15 @@ public class HomeView extends Composite<VerticalLayout> {
         layoutColumn2.add(h1);
         layoutColumn2.add(layoutColumn3);
         layoutColumn3.add(formLayout3Col);
-        formLayout3Col.add(h3);
-        formLayout3Col.add(h32);
-        formLayout3Col.add(h33);
-        formLayout3Col.add(textMedium);
-        formLayout3Col.add(textMedium2);
-        formLayout3Col.add(textMedium3);
+        formLayout3Col.add(campiaignH3);
+        formLayout3Col.add(timelineH3);
+        formLayout3Col.add(encyclopediaH3);
+        formLayout3Col.add(campaignsText);
+        formLayout3Col.add(timelineText);
+        formLayout3Col.add(encyclopediaText);
         layoutColumn3.add(layoutRow);
         layoutRow.add(layoutColumn4);
         layoutColumn4.add(layoutRow2);
-        layoutRow2.add(registerButton);
-        layoutRow2.add(orText);
-        layoutRow2.add(loginButton);
-        layoutRow2.add(welcomeText);
         getContent().add(layoutRow3);
         layoutRow3.add(footerText);
 
