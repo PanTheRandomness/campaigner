@@ -29,8 +29,9 @@ public class SecurityConfiguration extends VaadinWebSecurity {
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(new AntPathRequestMatcher("/line-awesome/**/*.svg")).permitAll());
 
+        //TODO: Admins only un /users
+
         super.configure(http);
         setLoginView(http, LoginView.class);
     }
-
 }

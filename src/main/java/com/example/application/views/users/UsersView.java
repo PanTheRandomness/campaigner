@@ -1,7 +1,6 @@
 package com.example.application.views.users;
 
 import com.example.application.data.User;
-import com.example.application.services.UserService;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.grid.Grid;
@@ -25,16 +24,16 @@ public class UsersView extends Composite<VerticalLayout> {
 
     public UsersView() {
         VerticalLayout layoutColumn2 = new VerticalLayout();
-        Grid basicGrid = new Grid(User.class);
+        Grid<User> userGrid = new Grid<>(User.class);
         HorizontalLayout layoutRow = new HorizontalLayout();
         Paragraph textSmall = new Paragraph();
         getContent().setWidth("100%");
         getContent().getStyle().set("flex-grow", "1");
         layoutColumn2.setWidth("100%");
         layoutColumn2.getStyle().set("flex-grow", "1");
-        basicGrid.setWidth("100%");
-        basicGrid.setHeight("100%");
-        setGridSampleData(basicGrid);
+        userGrid.setWidth("100%");
+        userGrid.setHeight("100%");
+        setGridSampleData(userGrid);
         layoutRow.addClassName(Gap.MEDIUM);
         layoutRow.setWidth("100%");
         layoutRow.setHeight("min-content");
@@ -43,14 +42,13 @@ public class UsersView extends Composite<VerticalLayout> {
         textSmall.setWidth("100%");
         textSmall.getStyle().set("font-size", "var(--lumo-font-size-xs)");
         getContent().add(layoutColumn2);
-        layoutColumn2.add(basicGrid);
+        layoutColumn2.add(userGrid);
         getContent().add(layoutRow);
         layoutRow.add(textSmall);
     }
 
-    private void setGridSampleData(Grid grid) {
+    private void setGridSampleData(Grid<User> grid) {
+        // TODO: Populate User Grid
         grid.setItems();
     }
-
-    private UserService userService;
 }
