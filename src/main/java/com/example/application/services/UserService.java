@@ -41,4 +41,6 @@ public class UserService {
         return (int) repository.count();
     }
 
+    public Boolean usernameAvailable(String username) { return repository.findByUsername(username).isEmpty(); }
+
 }

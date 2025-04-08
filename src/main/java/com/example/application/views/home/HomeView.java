@@ -1,6 +1,7 @@
 package com.example.application.views.home;
 
 import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -26,22 +27,29 @@ public class HomeView extends Composite<VerticalLayout> {
     // TODO: Add content to home page
     public HomeView() {
         VerticalLayout layoutColumn2 = new VerticalLayout();
-        H1 h1 = new H1();
+        H1 h1 = new H1("Welcome to Campaigner");
         VerticalLayout layoutColumn3 = new VerticalLayout();
         FormLayout formLayout3Col = new FormLayout();
-        H3 h3 = new H3();
-        H3 h32 = new H3();
-        H3 h33 = new H3();
+        H3 h3 = new H3("Manage Campaigns");
+        H3 h32 = new H3("Keep track of your plot with timelines");
+        H3 h33 = new H3("Keep notes with Encyclopedia");
+
         Paragraph textMedium = new Paragraph();
         Paragraph textMedium2 = new Paragraph();
         Paragraph textMedium3 = new Paragraph();
+
         HorizontalLayout layoutRow = new HorizontalLayout();
         VerticalLayout layoutColumn4 = new VerticalLayout();
         HorizontalLayout layoutRow2 = new HorizontalLayout();
-        Button buttonPrimary = new Button();
-        Paragraph textLarge = new Paragraph();
+
+        //TODO: If logged in, display welcome message to user instead
+        Button registerButton = new Button("Register");
+        Paragraph orText = new Paragraph();
+        Button loginButton = new Button("login");
+        Paragraph welcomeText = new Paragraph();
+
         HorizontalLayout layoutRow3 = new HorizontalLayout();
-        Paragraph textSmall = new Paragraph();
+        Paragraph footerText = new Paragraph();
         getContent().setWidth("100%");
         getContent().getStyle().set("flex-grow", "1");
         layoutColumn2.setWidth("100%");
@@ -55,6 +63,7 @@ public class HomeView extends Composite<VerticalLayout> {
         formLayout3Col.setWidth("100%");
         formLayout3Col.setResponsiveSteps(new ResponsiveStep("0", 1), new ResponsiveStep("250px", 2),
                 new ResponsiveStep("500px", 3));
+
         h3.setText("Manage Campaigns");
         h3.setWidth("max-content");
         h32.setText("Keep track of your plot with timelines");
@@ -73,6 +82,7 @@ public class HomeView extends Composite<VerticalLayout> {
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
         textMedium3.setWidth("100%");
         textMedium3.getStyle().set("font-size", "var(--lumo-font-size-m)");
+
         layoutRow.setWidthFull();
         layoutColumn3.setFlexGrow(1.0, layoutRow);
         layoutRow.addClassName(Gap.MEDIUM);
@@ -82,25 +92,38 @@ public class HomeView extends Composite<VerticalLayout> {
         layoutRow.setFlexGrow(1.0, layoutColumn4);
         layoutColumn4.setWidth("100%");
         layoutColumn4.getStyle().set("flex-grow", "1");
+
         layoutRow2.setWidthFull();
         layoutColumn4.setFlexGrow(1.0, layoutRow2);
         layoutRow2.addClassName(Gap.MEDIUM);
         layoutRow2.setWidth("100%");
         layoutRow2.getStyle().set("flex-grow", "1");
-        buttonPrimary.setText("Register");
-        buttonPrimary.setWidth("min-content");
-        buttonPrimary.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        textLarge.setText("to start creating!");
-        textLarge.setWidth("100%");
-        textLarge.getStyle().set("font-size", "var(--lumo-font-size-xl)");
+
+        registerButton.setText("Register");
+        registerButton.setWidth("min-content");
+        registerButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        orText.setText(" or ");
+        orText.setWidth("min-content");
+        orText.getStyle().set("font-size", "var(--lumo-font-size-xl)");
+
+        loginButton.setText("Sign in");
+        loginButton.setWidth("min-content");
+        loginButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        welcomeText.setText("to start creating!");
+        welcomeText.setWidth("fit-content");
+        welcomeText.getStyle().set("font-size", "var(--lumo-font-size-xl)");
+
         layoutRow3.addClassName(Gap.MEDIUM);
         layoutRow3.setWidth("100%");
         layoutRow3.setHeight("min-content");
-        textSmall.setText(
+        footerText.setText(
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
-        textSmall.setWidth("100%");
-        textSmall.getStyle().set("font-size", "var(--lumo-font-size-xs)");
+        footerText.setWidth("100%");
+        footerText.getStyle().set("font-size", "var(--lumo-font-size-xs)");
         getContent().add(layoutColumn2);
+
         layoutColumn2.add(h1);
         layoutColumn2.add(layoutColumn3);
         layoutColumn3.add(formLayout3Col);
@@ -113,9 +136,19 @@ public class HomeView extends Composite<VerticalLayout> {
         layoutColumn3.add(layoutRow);
         layoutRow.add(layoutColumn4);
         layoutColumn4.add(layoutRow2);
-        layoutRow2.add(buttonPrimary);
-        layoutRow2.add(textLarge);
+        layoutRow2.add(registerButton);
+        layoutRow2.add(orText);
+        layoutRow2.add(loginButton);
+        layoutRow2.add(welcomeText);
         getContent().add(layoutRow3);
-        layoutRow3.add(textSmall);
+        layoutRow3.add(footerText);
+
+        registerButton.addClickListener(e -> {
+            UI.getCurrent().navigate("register");
+        });
+
+        loginButton.addClickListener(e -> {
+            UI.getCurrent().navigate("login");
+        });
     }
 }

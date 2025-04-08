@@ -6,7 +6,8 @@
 @import url('./views/events-view.css');
 @import url('./views/encyclopedia-view.css');
 @import url('./views/users-view.css');
-@import url('@fontsource/dm-sans/index.css');    html {
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans&display=swap');
+    html {
 --lumo-font-family: DM Sans;
 
     }
