@@ -36,6 +36,11 @@ import java.util.Optional;
 @AnonymousAllowed
 public class MainLayout extends AppLayout {
 
+    // TODO: Add header
+    // TODO: Add Nav Bar
+    // TODO: Add Footer
+    // TODO: Modify Global Styles
+
     private H1 viewTitle;
 
     private AuthenticatedUser authenticatedUser;

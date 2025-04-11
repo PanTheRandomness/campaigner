@@ -23,6 +23,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 public class EncyclopediaView extends Composite<VerticalLayout> {
 
     //TODO: Add content to tabs
+    //TODO: Replace RichTextEditor with TextArea
     public EncyclopediaView() {
         HorizontalLayout layoutRow = new HorizontalLayout();
         Tabs tabs = new Tabs();
