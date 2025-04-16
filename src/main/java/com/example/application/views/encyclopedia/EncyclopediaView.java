@@ -43,11 +43,12 @@ public class EncyclopediaView extends Composite<VerticalLayout> {
         formLayout2Col.setWidth("100%");
         formLayout2Col.getStyle().set("flex-grow", "1");
 
-        // Configure component widths
-        // TODO: Add form to create/edit Encyclopedia items
         // TODO: Create select for item type
-        // TODO: Show all encyclopedia items
         // TODO: Add Tabs for each item type?
+        // TODO: Show all encyclopedia items
+        // TODO: Add form to create/edit Encyclopedia items
+
+        // Configure component widths
         EncyclopediaHeader.setText("Heading");
         EncyclopediaHeader.setWidth("max-content");
         EditorHeader.setText("Encyclopedia Item Editor");

@@ -44,6 +44,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 @Uses(Icon.class)
 public class EventsView extends Div implements BeforeEnterObserver {
 
+    // TODO: Fix ERROR 500
     private final String EVENT_ID = "eventID";
     private final String EVENT_EDIT_ROUTE_TEMPLATE = "events/%s/edit";
 

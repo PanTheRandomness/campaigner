@@ -1,15 +1,27 @@
 package com.example.application.views.campaigns;
 
+import com.example.application.data.Calendar;
+import com.example.application.data.Campaign;
+import com.example.application.data.User;
+import com.example.application.data.World;
+import com.example.application.data.repositories.CalendarRepository;
+import com.example.application.data.repositories.CampaignRepository;
+import com.example.application.data.repositories.UserRepository;
+import com.example.application.data.repositories.WorldRepository;
+import com.example.application.security.AuthenticatedUser;
+import com.example.application.services.CampaignService;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.Menu;
@@ -17,8 +29,9 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import jakarta.annotation.security.PermitAll;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.*;
+
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
 @PageTitle("Campaigns")
@@ -27,78 +40,184 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 @PermitAll
 public class CampaignsView extends Composite<VerticalLayout> {
 
-    //TODO: Connect tabs
-    public CampaignsView() {
+    private final CampaignRepository campaignRepository;
+    private final UserRepository userRepository;
+    private final CampaignService campaignService;
+    private final AuthenticatedUser authenticatedUser;
+
+    private final Select<Campaign> campaignSelect = new Select<>();
+    private final Tabs tabs = new Tabs();
+    private final Map<Tab, Component> tabsToPages = new LinkedHashMap<>();
+    private final VerticalLayout pages = new VerticalLayout();
+
+    private final SplitLayout splitLayout = new SplitLayout();
+
+    public CampaignsView(CampaignRepository campaignRepository, UserRepository userRepository, CampaignService campaignService, AuthenticatedUser authenticatedUser) {
+        this.campaignRepository = campaignRepository;
+        this.userRepository = userRepository;
+        this.campaignService = campaignService;
+        this.authenticatedUser = authenticatedUser;
+
         HorizontalLayout layoutRow = new HorizontalLayout();
-        Select select = new Select();
-        Button buttonPrimary = new Button();
-        VerticalLayout layoutColumn2 = new VerticalLayout();
-        Tabs tabs = new Tabs();
-        HorizontalLayout layoutRow2 = new HorizontalLayout();
+        Button createButton = new Button("Create New");
+        // TODO: Add Edit Button
+        // TODO: Add Remove Button only when owned campaign is selected
 
         getContent().setSpacing(false);
         getContent().setWidth("100%");
         getContent().getStyle().set("flex-grow", "1");
 
-        // Layout row settings
         layoutRow.addClassName(Gap.MEDIUM);
         layoutRow.setWidth("100%");
         layoutRow.setHeight("min-content");
-        layoutRow.setAlignItems(Alignment.CENTER);
-        layoutRow.setJustifyContentMode(JustifyContentMode.START);
+        layoutRow.setAlignItems(FlexComponent.Alignment.CENTER);
+        layoutRow.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
 
-        // Configure select component
-        select.setLabel("Select Campaign");
-        select.setWidth("min-content");
-        setSelectSampleData(select);
+        campaignSelect.setLabel("Select Campaign");
+        campaignSelect.setWidth("min-content");
 
-        // Configure buttons for creating new campaigns
-        buttonPrimary.setText("Create New");
-        layoutRow.setAlignSelf(FlexComponent.Alignment.END, buttonPrimary);
-        buttonPrimary.setWidth("min-content");
-        buttonPrimary.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        createButton.setWidth("min-content");
+        createButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        createButton.addClickListener(e -> openCampaignCreationView());
 
-        //Second layout column
-        layoutColumn2.setWidth("100%");
-        layoutColumn2.getStyle().set("flex-grow", "1");
-        tabs.setWidth("100%");
-        setTabsSampleData(tabs);
-
-        // Second row
-        layoutRow2.addClassName(Gap.MEDIUM);
-        layoutRow2.setWidth("100%");
-        layoutRow2.setHeight("min-content");
-
-        // Add components to main layout
+        layoutRow.add(campaignSelect, createButton);
         getContent().add(layoutRow);
-        layoutRow.add(select);
-        layoutRow.add(buttonPrimary);
-        getContent().add(layoutColumn2);
-        layoutColumn2.add(tabs);
-        getContent().add(layoutRow2);
+
+        splitLayout.setSizeFull();
+        getContent().add(splitLayout);
+        getContent().setFlexGrow(1, splitLayout);
+
+        VerticalLayout leftSide = new VerticalLayout();
+        leftSide.setSizeFull();
+        leftSide.getStyle().set("flex-grow", "1");
+        leftSide.add(tabs);
+        pages.setSizeFull();
+        pages.setAlignItems(FlexComponent.Alignment.START);
+        pages.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
+        leftSide.add(pages);
+        leftSide.setFlexGrow(1, pages);
+
+        splitLayout.addToPrimary(leftSide);
+        splitLayout.addToSecondary(new Div());
+
+        initializeCampaigns();
     }
 
-    record SampleItem(String value, String label, Boolean disabled) {
+    private void initializeCampaigns() {
+        Optional<User> maybeUser = authenticatedUser.get();
+        if (maybeUser.isEmpty()) {
+            showNoCampaignsView();
+            return;
+        }
+
+        User user = maybeUser.get();
+        Set<Campaign> campaigns = new HashSet<>();
+        campaigns.addAll(user.getGmCampaigns());
+        campaigns.addAll(user.getPlayerCampaigns());
+
+        if (campaigns.isEmpty()) {
+            showNoCampaignsView();
+            return;
+        }
+
+        campaignSelect.setItems(campaigns);
+        campaignSelect.setItemLabelGenerator(Campaign::getCampaignName);
+        campaignSelect.addValueChangeListener(event -> updateTabs(event.getValue()));
+
+        // Select the first campaign by default
+        campaignSelect.setValue(campaigns.iterator().next());
+
+        List<User> allUsers = userRepository.findAll();
+        List<World> userWorlds = campaignService.getWorldsForUser(user);
+        List<Calendar> userCalendars = campaignService.getCalendarsForUser(user);
+
+        CampaignForm form = new CampaignForm(allUsers, userWorlds, userCalendars, user, campaign -> {
+            campaignRepository.save(campaign);
+            UI.getCurrent().getPage().reload();
+        });
+
+        splitLayout.addToSecondary(form);
     }
 
-    private void setSelectSampleData(Select select) {
-        List<SampleItem> sampleItems = new ArrayList<>();
-        sampleItems.add(new SampleItem("first", "First", null));
-        sampleItems.add(new SampleItem("second", "Second", null));
-        sampleItems.add(new SampleItem("third", "Third", Boolean.TRUE));
-        sampleItems.add(new SampleItem("fourth", "Fourth", null));
+    private void showNoCampaignsView() {
+        tabs.removeAll();
+        pages.removeAll();
 
-        // TODO: Set items in the select dropdown
-        // TODO: Add filtering to campaign select
-        select.setItems(sampleItems);
-        select.setItemLabelGenerator(item -> ((SampleItem) item).label());
-        select.setItemEnabledProvider(item -> !Boolean.TRUE.equals(((SampleItem) item).disabled()));
+        Tab overviewTab = new Tab("Overview");
+        tabs.add(overviewTab);
+        tabs.setSelectedTab(overviewTab);
+        VerticalLayout messageLayout = new VerticalLayout();
+        messageLayout.setWidthFull();
+        messageLayout.setPadding(true);
+        messageLayout.setHeightFull();
+
+        Paragraph message = new Paragraph("You are not yet participating in any campaigns.");
+        messageLayout.add(message);
+        messageLayout.setAlignItems(FlexComponent.Alignment.START);
+
+        pages.add(messageLayout);
     }
 
-    private void setTabsSampleData(Tabs tabs) {
-        tabs.add(new Tab("Overview"));
-        tabs.add(new Tab("Timeline"));
-        tabs.add(new Tab("Players"));
-        tabs.add(new Tab("World"));
+    private void updateTabs(Campaign campaign) {
+        tabs.removeAll();
+        pages.removeAll();
+        tabsToPages.clear();
+
+        Tab overviewTab = new Tab("Overview");
+        Tab timelineTab = new Tab("Timeline");
+        Tab playersTab = new Tab("Players");
+        Tab worldTab = new Tab("World");
+
+        tabs.add(overviewTab, timelineTab, playersTab, worldTab);
+
+        Div overviewPage = new Div(new Paragraph("Overview content for " + campaign.getCampaignName()));
+        Div timelinePage = new Div(new Paragraph("Timeline content for " + campaign.getCampaignName()));
+        Div playersPage = new Div(new Paragraph("Players content for " + campaign.getCampaignName()));
+        Div worldPage = new Div(new Paragraph("World content for " + campaign.getCampaignName()));
+
+        tabsToPages.put(overviewTab, overviewPage);
+        tabsToPages.put(timelineTab, timelinePage);
+        tabsToPages.put(playersTab, playersPage);
+        tabsToPages.put(worldTab, worldPage);
+
+        pages.add(overviewPage, timelinePage, playersPage, worldPage);
+        tabs.addSelectedChangeListener(event -> {
+            tabsToPages.values().forEach(page -> page.setVisible(false));
+            Component selectedPage = tabsToPages.get(tabs.getSelectedTab());
+            if (selectedPage != null) {
+                selectedPage.setVisible(true);
+            }
+        });
+
+        // Show the first tab by default
+        tabs.setSelectedTab(overviewTab);
+        tabsToPages.values().forEach(page -> page.setVisible(false));
+        overviewPage.setVisible(true);
+    }
+
+    private void openCampaignCreationView() {
+        Optional<User> maybeUser = authenticatedUser.get();
+        if (maybeUser.isEmpty()) {
+            showNoCampaignsView();
+            return;
+        }
+
+        User user = maybeUser.get();
+        Set<Campaign> campaigns = new HashSet<>();
+        campaigns.addAll(user.getGmCampaigns());
+        campaigns.addAll(user.getPlayerCampaigns());
+
+        List<User> allUsers = userRepository.findAll();
+        List<World> userWorlds = campaignService.getWorldsForUser(user);
+        List<Calendar> userCalendars = campaignService.getCalendarsForUser(user);
+
+        CampaignForm form = new CampaignForm(allUsers, userWorlds, userCalendars, user, campaign -> {
+            campaignRepository.save(campaign);
+            UI.getCurrent().getPage().reload();
+        });
+
+        splitLayout.remove(splitLayout.getSecondaryComponent());
+
+        splitLayout.addToSecondary(form);
     }
 }

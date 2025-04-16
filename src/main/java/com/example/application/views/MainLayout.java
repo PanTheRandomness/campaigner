@@ -62,7 +62,11 @@ public class MainLayout extends AppLayout implements RouterLayout {
         Footer contentFooter = createContentFooter();
         contentFooter.getStyle().set("marginTop", "auto");
 
+        Div contentWrapper = new Div();
+        contentWrapper.getStyle().set("flexGrow", "1");
+
         getElement().appendChild(wrapper.getElement());
+        wrapper.getElement().appendChild(contentWrapper.getElement());
         wrapper.getElement().appendChild(contentFooter.getElement());
     }
 
