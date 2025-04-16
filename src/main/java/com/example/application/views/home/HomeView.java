@@ -1,5 +1,7 @@
 package com.example.application.views.home;
 
+import com.example.application.data.User;
+import com.example.application.security.AuthenticatedUser;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -18,14 +20,19 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
+import java.util.Optional;
+
 @PageTitle("Home")
 @Route("")
 @Menu(order = 0, icon = LineAwesomeIconUrl.HOME_SOLID)
 @AnonymousAllowed
 public class HomeView extends Composite<VerticalLayout> {
 
+    private final AuthenticatedUser authenticatedUser;
     // TODO: Add content to home page
-    public HomeView() {
+    public HomeView(AuthenticatedUser authenticatedUser) {
+        this.authenticatedUser = authenticatedUser;
+
         VerticalLayout layoutColumn2 = new VerticalLayout();
         H1 h1 = new H1("Welcome to Campaigner");
         VerticalLayout layoutColumn3 = new VerticalLayout();
@@ -45,19 +52,21 @@ public class HomeView extends Composite<VerticalLayout> {
         // TODO: Conditional Buttons/Welcome text
         Button registerButton = new Button("Register");
         Paragraph orText = new Paragraph();
-        Button loginButton = new Button("login");
+        Button loginButton = new Button("Login");
         Paragraph welcomeText = new Paragraph();
 
         HorizontalLayout layoutRow3 = new HorizontalLayout();
         Paragraph footerText = new Paragraph();
+
         getContent().setWidth("100%");
 
-        if (UI.getCurrent().getSession().getAttribute("user") != null) {
-            String username = (String) UI.getCurrent().getSession().getAttribute("user");
-            welcomeText.setText("Welcome back " + username + "!");
+        Optional<User> maybeUser = authenticatedUser.get();
+        if (maybeUser.isPresent()) {
+            User user = maybeUser.get();
+            welcomeText.setText("Welcome back " + user.getName() + "!");
             layoutRow2.add(welcomeText);
         } else {
-            layoutRow2.add(registerButton, orText, loginButton, welcomeText);
+            layoutRow2.add(registerButton, orText, loginButton);
         }
 
         getContent().getStyle().set("flex-grow", "1");
@@ -136,17 +145,21 @@ public class HomeView extends Composite<VerticalLayout> {
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
         footerText.setWidth("100%");
         footerText.getStyle().set("font-size", "var(--lumo-font-size-xs)");
+
+        // Add components
         getContent().add(layoutColumn2);
 
         layoutColumn2.add(h1);
         layoutColumn2.add(layoutColumn3);
         layoutColumn3.add(formLayout3Col);
+
         formLayout3Col.add(campiaignH3);
         formLayout3Col.add(timelineH3);
         formLayout3Col.add(encyclopediaH3);
         formLayout3Col.add(campaignsText);
         formLayout3Col.add(timelineText);
         formLayout3Col.add(encyclopediaText);
+
         layoutColumn3.add(layoutRow);
         layoutRow.add(layoutColumn4);
         layoutColumn4.add(layoutRow2);
