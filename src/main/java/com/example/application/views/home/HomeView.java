@@ -8,6 +8,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
@@ -34,146 +35,93 @@ public class HomeView extends Composite<VerticalLayout> {
     public HomeView(AuthenticatedUser authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
 
-        VerticalLayout layoutColumn2 = new VerticalLayout();
-        H1 h1 = new H1("Welcome to Campaigner");
-        VerticalLayout layoutColumn3 = new VerticalLayout();
-        FormLayout formLayout3Col = new FormLayout();
-        H3 campiaignH3 = new H3("Manage Campaigns");
-        H3 timelineH3 = new H3("Keep track of your plot with timelines");
-        H3 encyclopediaH3 = new H3("Keep notes with Encyclopedia");
+        VerticalLayout mainLayout = getContent();
+        mainLayout.setWidthFull();
+        mainLayout.getStyle().set("flex-grow", "1");
 
-        Paragraph campaignsText = new Paragraph();
-        Paragraph timelineText = new Paragraph();
-        Paragraph encyclopediaText = new Paragraph();
+        // Title
+        H1 title = new H1("Welcome to Campaigner");
+        title.setWidth("max-content");
 
-        HorizontalLayout layoutRow = new HorizontalLayout();
-        VerticalLayout layoutColumn4 = new VerticalLayout();
-        HorizontalLayout layoutRow2 = new HorizontalLayout();
+        // Headers and Descriptions
+        FormLayout featureLayout = new FormLayout();
+        featureLayout.setWidthFull();
+        featureLayout.setResponsiveSteps(
+                new ResponsiveStep("0", 1),
+                new ResponsiveStep("250px", 2),
+                new ResponsiveStep("500px", 3)
+        );
 
-        // TODO: Conditional Buttons/Welcome text
-        Button registerButton = new Button("Register");
-        Paragraph orText = new Paragraph();
-        Button loginButton = new Button("Login");
-        Paragraph welcomeText = new Paragraph();
+        featureLayout.add(
+                createFeature("Manage Campaigns", "Manage all of your campaigns conveniently in one place!", "/campaigns"),
+                // TODO: Link to timeline
+                createFeature("Keep track of your plot with timelines", "Create new events or modify old ones. Keep track of important plot points visually.", "/timeline"),
+                createFeature("Keep notes with Encyclopedia", "Never forget key pieces information about your world's history or geography.", "/encyclopedia")
+        );
 
-        HorizontalLayout layoutRow3 = new HorizontalLayout();
-        Paragraph footerText = new Paragraph();
-
-        getContent().setWidth("100%");
+        // User Status (logged in: Welcome message / logged out: buttons)
+        HorizontalLayout userActionLayout = new HorizontalLayout();
+        userActionLayout.setWidthFull();
+        userActionLayout.addClassName(Gap.MEDIUM);
+        userActionLayout.getStyle().set("flex-grow", "1");
 
         Optional<User> maybeUser = authenticatedUser.get();
         if (maybeUser.isPresent()) {
-            User user = maybeUser.get();
-            welcomeText.setText("Welcome back " + user.getName() + "!");
-            layoutRow2.add(welcomeText);
+            Paragraph welcomeText = new Paragraph("Welcome back " + maybeUser.get().getName() + "!");
+            welcomeText.getStyle().set("font-size", "var(--lumo-font-size-xl)");
+            userActionLayout.add(welcomeText);
         } else {
-            layoutRow2.add(registerButton, orText, loginButton);
+            Button registerButton = new Button("Register");
+            registerButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+            registerButton.addClickListener(e -> UI.getCurrent().navigate("register"));
+
+            Paragraph orText = new Paragraph(" or ");
+            orText.getStyle().set("font-size", "var(--lumo-font-size-xl)");
+
+            Button loginButton = new Button("Sign in");
+            loginButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+            loginButton.addClickListener(e -> UI.getCurrent().navigate("login"));
+
+            userActionLayout.add(registerButton, orText, loginButton);
         }
 
-        getContent().getStyle().set("flex-grow", "1");
+        // Footer
+        HorizontalLayout footerLayout = new HorizontalLayout();
+        footerLayout.setWidthFull();
+        footerLayout.setHeight("min-content");
+        footerLayout.addClassName(Gap.MEDIUM);
 
-        layoutColumn2.setWidth("100%");
-        layoutColumn2.getStyle().set("flex-grow", "1");
-
-        h1.setText("Welcome to Campaigner");
-        h1.setWidth("max-content");
-
-        layoutColumn3.setWidthFull();
-        layoutColumn2.setFlexGrow(1.0, layoutColumn3);
-        layoutColumn3.setWidth("100%");
-        layoutColumn3.getStyle().set("flex-grow", "1");
-
-        formLayout3Col.setWidth("100%");
-        formLayout3Col.setResponsiveSteps(new ResponsiveStep("0", 1), new ResponsiveStep("250px", 2),
-                new ResponsiveStep("500px", 3));
-
-        campiaignH3.setText("Manage Campaigns");
-        campiaignH3.setWidth("max-content");
-        timelineH3.setText("Keep track of your plot with timelines");
-        timelineH3.setWidth("max-content");
-        encyclopediaH3.setText("Keep notes with Encyclopedia");
-        encyclopediaH3.setWidth("max-content");
-
-        campaignsText.setText(
-                "Manage all of your campaigns conveniently in one place!");
-        campaignsText.setWidth("100%");
-        campaignsText.getStyle().set("font-size", "var(--lumo-font-size-m)");
-        timelineText.setText(
-                "Create new events or modify old ones. Keep track of important plot points visually.");
-        timelineText.setWidth("100%");
-        timelineText.getStyle().set("font-size", "var(--lumo-font-size-m)");
-        encyclopediaText.setText(
-                "Never forget key pieces information about your world's history or geography.");
-        encyclopediaText.setWidth("100%");
-        encyclopediaText.getStyle().set("font-size", "var(--lumo-font-size-m)");
-
-        layoutRow.setWidthFull();
-        layoutColumn3.setFlexGrow(1.0, layoutRow);
-        layoutRow.addClassName(Gap.MEDIUM);
-        layoutRow.setWidth("100%");
-        layoutRow.getStyle().set("flex-grow", "1");
-        layoutColumn4.setHeightFull();
-        layoutRow.setFlexGrow(1.0, layoutColumn4);
-        layoutColumn4.setWidth("100%");
-        layoutColumn4.getStyle().set("flex-grow", "1");
-
-        layoutRow2.setWidthFull();
-        layoutColumn4.setFlexGrow(1.0, layoutRow2);
-        layoutRow2.addClassName(Gap.MEDIUM);
-        layoutRow2.setWidth("100%");
-        layoutRow2.getStyle().set("flex-grow", "1");
-
-        registerButton.setText("Register");
-        registerButton.setWidth("min-content");
-        registerButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-        orText.setText(" or ");
-        orText.setWidth("min-content");
-        orText.getStyle().set("font-size", "var(--lumo-font-size-xl)");
-
-        loginButton.setText("Sign in");
-        loginButton.setWidth("min-content");
-        loginButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-        welcomeText.setText("to start creating!");
-        welcomeText.setWidth("fit-content");
-        welcomeText.getStyle().set("font-size", "var(--lumo-font-size-xl)");
-        welcomeText.addClassName("custom-welcome");
-
-        layoutRow3.addClassName(Gap.MEDIUM);
-        layoutRow3.setWidth("100%");
-        layoutRow3.setHeight("min-content");
-        footerText.setText(
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
-        footerText.setWidth("100%");
+        Paragraph footerText = new Paragraph(
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+        );
         footerText.getStyle().set("font-size", "var(--lumo-font-size-xs)");
+        footerText.setWidthFull();
 
-        // Add components
-        getContent().add(layoutColumn2);
+        footerLayout.add(footerText);
 
-        layoutColumn2.add(h1);
-        layoutColumn2.add(layoutColumn3);
-        layoutColumn3.add(formLayout3Col);
+        // Adding components to layout
+        VerticalLayout contentLayout = new VerticalLayout(title, featureLayout, userActionLayout);
+        contentLayout.setWidthFull();
+        contentLayout.setFlexGrow(1, featureLayout, userActionLayout);
 
-        formLayout3Col.add(campiaignH3);
-        formLayout3Col.add(timelineH3);
-        formLayout3Col.add(encyclopediaH3);
-        formLayout3Col.add(campaignsText);
-        formLayout3Col.add(timelineText);
-        formLayout3Col.add(encyclopediaText);
+        mainLayout.add(contentLayout, footerLayout);
+    }
 
-        layoutColumn3.add(layoutRow);
-        layoutRow.add(layoutColumn4);
-        layoutColumn4.add(layoutRow2);
-        getContent().add(layoutRow3);
-        layoutRow3.add(footerText);
+    private VerticalLayout createFeature(String heading, String description, String route) {
+        VerticalLayout feature = new VerticalLayout();
+        feature.setWidthFull();
 
-        registerButton.addClickListener(e -> {
-            UI.getCurrent().navigate("register");
-        });
+        Anchor link = new Anchor(route, heading);
+        link.getElement().getStyle().set("font-size", "var(--lumo-font-size-xl)");
+        link.getElement().getStyle().set("font-weight", "bold");
+        link.getElement().getStyle().set("text-decoration", "none");
+        link.getElement().getStyle().set("color", "var(--lumo-primary-text-color)");
 
-        loginButton.addClickListener(e -> {
-            UI.getCurrent().navigate("login");
-        });
+        Paragraph text = new Paragraph(description);
+        text.setWidthFull();
+        text.getStyle().set("font-size", "var(--lumo-font-size-m)");
+
+        feature.add(link, text);
+        return feature;
     }
 }
