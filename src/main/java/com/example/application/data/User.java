@@ -28,10 +28,10 @@ public class User extends AbstractEntity {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<Role> roles;
 
-    @ManyToMany(mappedBy = "gms")
+    @ManyToMany(mappedBy = "gms", fetch = FetchType.EAGER)
     private List<Campaign> gmCampaigns;
 
-    @ManyToMany(mappedBy = "players")
+    @ManyToMany(mappedBy = "players", fetch = FetchType.EAGER)
     private List<Campaign> playerCampaigns;
 
     //TODO: Add PCs, and which Campaigns they're in
