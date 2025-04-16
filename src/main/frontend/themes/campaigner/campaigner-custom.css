@@ -3,3 +3,10 @@
     font-size: var(--lumo-font-size-xxl);
     text-align: center;
 }
+
+.content-footer {
+    padding: 1rem;
+    text-align: center;
+    border-top: 1px solid var(--lumo-contrast-10pct);
+    font-size: var(--lumo-font-size-s);
+}

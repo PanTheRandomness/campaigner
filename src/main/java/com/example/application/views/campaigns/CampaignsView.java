@@ -35,40 +35,47 @@ public class CampaignsView extends Composite<VerticalLayout> {
         VerticalLayout layoutColumn2 = new VerticalLayout();
         Tabs tabs = new Tabs();
         HorizontalLayout layoutRow2 = new HorizontalLayout();
-        Paragraph textSmall = new Paragraph();
+
         getContent().setSpacing(false);
         getContent().setWidth("100%");
         getContent().getStyle().set("flex-grow", "1");
+
+        // Layout row settings
         layoutRow.addClassName(Gap.MEDIUM);
         layoutRow.setWidth("100%");
         layoutRow.setHeight("min-content");
         layoutRow.setAlignItems(Alignment.CENTER);
         layoutRow.setJustifyContentMode(JustifyContentMode.START);
+
+        // Configure select component
         select.setLabel("Select Campaign");
         select.setWidth("min-content");
         setSelectSampleData(select);
+
+        // Configure buttons for creating new campaigns
         buttonPrimary.setText("Create New");
         layoutRow.setAlignSelf(FlexComponent.Alignment.END, buttonPrimary);
         buttonPrimary.setWidth("min-content");
         buttonPrimary.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        //Second layout column
         layoutColumn2.setWidth("100%");
         layoutColumn2.getStyle().set("flex-grow", "1");
         tabs.setWidth("100%");
         setTabsSampleData(tabs);
+
+        // Second row
         layoutRow2.addClassName(Gap.MEDIUM);
         layoutRow2.setWidth("100%");
         layoutRow2.setHeight("min-content");
-        textSmall.setText(
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
-        textSmall.setWidth("100%");
-        textSmall.getStyle().set("font-size", "var(--lumo-font-size-xs)");
+
+        // Add components to main layout
         getContent().add(layoutRow);
         layoutRow.add(select);
         layoutRow.add(buttonPrimary);
         getContent().add(layoutColumn2);
         layoutColumn2.add(tabs);
         getContent().add(layoutRow2);
-        layoutRow2.add(textSmall);
     }
 
     record SampleItem(String value, String label, Boolean disabled) {
@@ -80,6 +87,9 @@ public class CampaignsView extends Composite<VerticalLayout> {
         sampleItems.add(new SampleItem("second", "Second", null));
         sampleItems.add(new SampleItem("third", "Third", Boolean.TRUE));
         sampleItems.add(new SampleItem("fourth", "Fourth", null));
+
+        // TODO: Set items in the select dropdown
+        // TODO: Add filtering to campaign select
         select.setItems(sampleItems);
         select.setItemLabelGenerator(item -> ((SampleItem) item).label());
         select.setItemEnabledProvider(item -> !Boolean.TRUE.equals(((SampleItem) item).disabled()));

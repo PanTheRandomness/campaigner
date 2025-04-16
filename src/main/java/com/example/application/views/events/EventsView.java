@@ -49,13 +49,9 @@ public class EventsView extends Div implements BeforeEnterObserver {
 
     private final Grid<Event> grid = new Grid<>(Event.class, false);
 
-    private TextField name;
-    private TextField description;
-    private TextField type;
+    private TextField name, description, type, location;
     private DatePicker time;
-    private TextField location;
-    private Checkbox reoccurring;
-    private Checkbox private_;
+    private Checkbox reoccurring, private_;
 
     private final Button cancel = new Button("Cancel");
     private final Button save = new Button("Save");
@@ -70,48 +66,72 @@ public class EventsView extends Div implements BeforeEnterObserver {
         this.eventService = eventService;
         addClassNames("events-view");
 
-        // Create UI
+        // Split layout for grid and editor
         SplitLayout splitLayout = new SplitLayout();
-
         createGridLayout(splitLayout);
         createEditorLayout(splitLayout);
-
         add(splitLayout);
 
-        // Configure Grid
+        // Configure grid
+        configureGrid();
+
+        // Configure form binder
+        binder = new BeanValidationBinder<>(Event.class);
+        binder.bindInstanceFields(this);
+
+        // Button actions
+        cancel.addClickListener(e -> clearForm());
+        save.addClickListener(e -> saveEvent());
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        Optional<Long> eventId = event.getRouteParameters().get(EVENT_ID).map(Long::parseLong);
+        if (eventId.isPresent()) {
+            eventService.get(eventId.get()).ifPresentOrElse(
+                    this::populateForm,
+                    () -> {
+                        Notification.show("Event not found", 3000, Position.BOTTOM_START);
+                        refreshGrid();
+                        event.forwardTo(EventsView.class);
+                    }
+            );
+        }
+    }
+
+    private void configureGrid() {
         grid.addColumn("name").setAutoWidth(true);
         grid.addColumn("description").setAutoWidth(true);
         grid.addColumn("type").setAutoWidth(true);
         grid.addColumn("time").setAutoWidth(true);
         grid.addColumn("location").setAutoWidth(true);
+
+        // Reoccurring column renderer
         LitRenderer<Event> reoccurringRenderer = LitRenderer.<Event>of(
-                        "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
-                .withProperty("icon", event -> {
-                    Set<ReoccurrenceType> types = event.getReoccurring();
-                    return (types != null && !types.isEmpty() && !types.contains(ReoccurrenceType.NONE)) ? "check" : "minus";
-                })
-                .withProperty("color", event -> {
-                    Set<ReoccurrenceType> types = event.getReoccurring();
-                    return (types != null && !types.isEmpty() && !types.contains(ReoccurrenceType.NONE))
-                            ? "var(--lumo-primary-text-color)"
-                            : "var(--lumo-disabled-text-color)";
-                });
+                "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>"
+        ).withProperty("icon", event -> {
+            Set<ReoccurrenceType> types = event.getReoccurring();
+            return (types != null && !types.isEmpty() && !types.contains(ReoccurrenceType.NONE)) ? "check" : "minus";
+        }).withProperty("color", event -> {
+            Set<ReoccurrenceType> types = event.getReoccurring();
+            return (types != null && !types.isEmpty() && !types.contains(ReoccurrenceType.NONE))
+                    ? "var(--lumo-primary-text-color)"
+                    : "var(--lumo-disabled-text-color)";
+        });
 
         grid.addColumn(reoccurringRenderer).setHeader("Reoccurring").setAutoWidth(true);
 
-        LitRenderer<Event> private_Renderer = LitRenderer.<Event>of(
-                "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
-                .withProperty("icon", private_ -> private_.isPrivate_() ? "check" : "minus").withProperty("color",
-                        private_ -> private_.isPrivate_()
-                                ? "var(--lumo-primary-text-color)"
-                                : "var(--lumo-disabled-text-color)");
+        // Private column renderer
+        LitRenderer<Event> privateRenderer = LitRenderer.<Event>of(
+                        "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>"
+                ).withProperty("icon", private_ -> private_.isPrivate_() ? "check" : "minus")
+                .withProperty("color", private_ -> private_.isPrivate_() ? "var(--lumo-primary-text-color)" : "var(--lumo-disabled-text-color)");
 
-        grid.addColumn(private_Renderer).setHeader("Private_").setAutoWidth(true);
+        grid.addColumn(privateRenderer).setHeader("Private").setAutoWidth(true);
 
         grid.setItems(query -> eventService.list(VaadinSpringDataHelpers.toSpringPageRequest(query)).stream());
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
-        // when a row is selected or deselected, populate form
         grid.asSingleSelect().addValueChangeListener(event -> {
             if (event.getValue() != null) {
                 UI.getCurrent().navigate(String.format(EVENT_EDIT_ROUTE_TEMPLATE, event.getValue().getId()));
@@ -120,57 +140,6 @@ public class EventsView extends Div implements BeforeEnterObserver {
                 UI.getCurrent().navigate(EventsView.class);
             }
         });
-
-        // Configure Form
-        binder = new BeanValidationBinder<>(Event.class);
-
-        // Bind fields. This is where you'd define e.g. validation rules
-
-        binder.bindInstanceFields(this);
-
-        cancel.addClickListener(e -> {
-            clearForm();
-            refreshGrid();
-        });
-
-        save.addClickListener(e -> {
-            try {
-                if (this.event == null) {
-                    this.event = new Event();
-                }
-                binder.writeBean(this.event);
-                eventService.save(this.event);
-                clearForm();
-                refreshGrid();
-                Notification.show("Data updated");
-                UI.getCurrent().navigate(EventsView.class);
-            } catch (ObjectOptimisticLockingFailureException exception) {
-                Notification n = Notification.show(
-                        "Error updating the data. Somebody else has updated the record while you were making changes.");
-                n.setPosition(Position.MIDDLE);
-                n.addThemeVariants(NotificationVariant.LUMO_ERROR);
-            } catch (ValidationException validationException) {
-                Notification.show("Failed to update the data. Check again that all values are valid");
-            }
-        });
-    }
-
-    @Override
-    public void beforeEnter(BeforeEnterEvent event) {
-        Optional<Long> eventId = event.getRouteParameters().get(EVENT_ID).map(Long::parseLong);
-        if (eventId.isPresent()) {
-            Optional<Event> eventFromBackend = eventService.get(eventId.get());
-            if (eventFromBackend.isPresent()) {
-                populateForm(eventFromBackend.get());
-            } else {
-                Notification.show(String.format("The requested event was not found, ID = %s", eventId.get()), 3000,
-                        Notification.Position.BOTTOM_START);
-                // when a row is selected but the data is no longer available,
-                // refresh grid
-                refreshGrid();
-                event.forwardTo(EventsView.class);
-            }
-        }
     }
 
     private void createEditorLayout(SplitLayout splitLayout) {
@@ -189,8 +158,8 @@ public class EventsView extends Div implements BeforeEnterObserver {
         location = new TextField("Location");
         reoccurring = new Checkbox("Reoccurring");
         private_ = new Checkbox("Private");
-        formLayout.add(name, description, type, time, location, reoccurring, private_);
 
+        formLayout.add(name, description, type, time, location, reoccurring, private_);
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
 
@@ -225,5 +194,24 @@ public class EventsView extends Div implements BeforeEnterObserver {
     private void populateForm(Event value) {
         this.event = value;
         binder.readBean(this.event);
+    }
+
+    private void saveEvent() {
+        try {
+            if (this.event == null) {
+                this.event = new Event();
+            }
+            binder.writeBean(this.event);
+            eventService.save(this.event);
+            clearForm();
+            refreshGrid();
+            Notification.show("Event saved successfully");
+            UI.getCurrent().navigate(EventsView.class);
+        } catch (ObjectOptimisticLockingFailureException exception) {
+            Notification.show("Error: Record was updated by someone else.", 3000, Position.MIDDLE)
+                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+        } catch (ValidationException validationException) {
+            Notification.show("Failed to save. Please check the form values.");
+        }
     }
 }

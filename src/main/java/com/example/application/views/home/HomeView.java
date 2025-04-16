@@ -2,6 +2,7 @@ package com.example.application.views.home;
 
 import com.example.application.data.User;
 import com.example.application.security.AuthenticatedUser;
+import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -25,7 +26,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 import java.util.Optional;
 
 @PageTitle("Home")
-@Route("")
+@Route(value = "", layout = MainLayout.class)
 @Menu(order = 0, icon = LineAwesomeIconUrl.HOME_SOLID)
 @AnonymousAllowed
 public class HomeView extends Composite<VerticalLayout> {
@@ -85,26 +86,12 @@ public class HomeView extends Composite<VerticalLayout> {
             userActionLayout.add(registerButton, orText, loginButton);
         }
 
-        // Footer
-        HorizontalLayout footerLayout = new HorizontalLayout();
-        footerLayout.setWidthFull();
-        footerLayout.setHeight("min-content");
-        footerLayout.addClassName(Gap.MEDIUM);
-
-        Paragraph footerText = new Paragraph(
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-        );
-        footerText.getStyle().set("font-size", "var(--lumo-font-size-xs)");
-        footerText.setWidthFull();
-
-        footerLayout.add(footerText);
-
         // Adding components to layout
         VerticalLayout contentLayout = new VerticalLayout(title, featureLayout, userActionLayout);
         contentLayout.setWidthFull();
         contentLayout.setFlexGrow(1, featureLayout, userActionLayout);
 
-        mainLayout.add(contentLayout, footerLayout);
+        mainLayout.add(contentLayout);
     }
 
     private VerticalLayout createFeature(String heading, String description, String route) {

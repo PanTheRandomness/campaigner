@@ -10,9 +10,9 @@
 @import url('./campaigner-custom.css');
 
     html {
---lumo-font-family: DM Sans;
-
+        --lumo-font-family: DM Sans;
     }
+
     body {
         background-color: #AFDBD3;
     }

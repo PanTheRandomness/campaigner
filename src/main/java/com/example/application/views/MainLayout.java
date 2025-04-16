@@ -2,6 +2,7 @@ package com.example.application.views;
 
 import com.example.application.data.User;
 import com.example.application.security.AuthenticatedUser;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -15,10 +16,13 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.SvgIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.Scroller;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
@@ -34,17 +38,14 @@ import java.util.Optional;
  */
 @Layout
 @AnonymousAllowed
-public class MainLayout extends AppLayout {
-
-    // TODO: Add header
-    // TODO: Add Nav Bar
-    // TODO: Add Footer
-    // TODO: Modify Global Styles
+public class MainLayout extends AppLayout implements RouterLayout {
 
     private H1 viewTitle;
 
     private AuthenticatedUser authenticatedUser;
     private AccessAnnotationChecker accessChecker;
+
+    private final Div wrapper = new Div();
 
     public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker) {
         this.authenticatedUser = authenticatedUser;
@@ -53,6 +54,33 @@ public class MainLayout extends AppLayout {
         setPrimarySection(Section.DRAWER);
         addDrawerContent();
         addHeaderContent();
+
+        wrapper.getStyle().set("display", "flex");
+        wrapper.getStyle().set("flexDirection", "column");
+        wrapper.getStyle().set("minHeight", "100vh");
+
+        Footer contentFooter = createContentFooter();
+        contentFooter.getStyle().set("marginTop", "auto");
+
+        getElement().appendChild(wrapper.getElement());
+        wrapper.getElement().appendChild(contentFooter.getElement());
+    }
+
+    @Override
+    public void showRouterLayoutContent(HasElement content) {
+        if (wrapper.getElement().getChildCount() > 1) {
+            wrapper.getElement().removeChild(wrapper.getElement().getChild(0));
+        }
+        wrapper.getElement().insertChild(0, content.getElement());
+    }
+
+    private Footer createContentFooter() {
+        Footer footer = new Footer();
+        footer.addClassName("content-footer");
+        Span footerText = new Span("© Campaigner 2025 - All rights reserved.");
+        footer.add(footerText);
+
+        return footer;
     }
 
     private void addHeaderContent() {
@@ -98,9 +126,13 @@ public class MainLayout extends AppLayout {
             User user = maybeUser.get();
 
             Avatar avatar = new Avatar(user.getName());
-            StreamResource resource = new StreamResource("profile-pic",
-                    () -> new ByteArrayInputStream(user.getProfilePicture()));
-            avatar.setImageResource(resource);
+            if (user.getProfilePicture() != null) {
+                StreamResource resource = new StreamResource("profile-pic",
+                        () -> new ByteArrayInputStream(user.getProfilePicture()));
+                avatar.setImageResource(resource);
+            } else {
+                avatar.setImage("https://via.placeholder.com/150");
+            }
             avatar.setThemeName("xsmall");
             avatar.getElement().setAttribute("tabindex", "-1");
 
