@@ -2,21 +2,27 @@ package com.example.application.views.users;
 
 import com.example.application.data.User;
 import com.example.application.data.Campaign;
+import com.example.application.data.Role;
 import com.example.application.data.repositories.UserRepository;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -24,7 +30,11 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import jakarta.annotation.security.RolesAllowed;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Base64;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @PageTitle("Users")
@@ -121,19 +131,74 @@ public class UsersView extends Composite<VerticalLayout> {
 
     private void openEditDialog(User user) {
         Dialog editDialog = new Dialog();
-        TextField nameField = new TextField("Name", user.getName());
-        TextField emailField = new TextField("Email", user.getEmail());
+        editDialog.setHeaderTitle("Edit User");
+        editDialog.setWidth("400px");
+
+        TextField usernameField = new TextField("Username");
+        usernameField.setValue(user.getUsername() != null ? user.getUsername() : "");
+
+        TextField nameField = new TextField("Name");
+        nameField.setValue(user.getName() != null ? user.getName() : "");
+
+        TextField emailField = new TextField("Email");
+        emailField.setValue(user.getEmail() != null ? user.getEmail() : "");
+
+        CheckboxGroup<Role> rolesGroup = new CheckboxGroup<>();
+        rolesGroup.setLabel("Roles");
+        rolesGroup.setItems(Role.values());
+        rolesGroup.setValue(user.getRoles() != null ? user.getRoles() : Set.of());
+
+        Image profileImage = new Image();
+        profileImage.setWidth("150px");
+        profileImage.setHeight("150px");
+
+        if (user.getProfilePicture() != null) {
+            String base64Image = Base64.getEncoder().encodeToString(user.getProfilePicture());
+            profileImage.setSrc("data:image/png;base64," + base64Image);
+        }
+
+        MemoryBuffer buffer = new MemoryBuffer();
+        Upload upload = new Upload(buffer);
+        upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/gif");
+        upload.addSucceededListener(event -> {
+            try (InputStream inputStream = buffer.getInputStream()) {
+                byte[] imageBytes = inputStream.readAllBytes();
+                user.setProfilePicture(imageBytes);
+
+                String base64 = Base64.getEncoder().encodeToString(imageBytes);
+                profileImage.setSrc("data:" + event.getMIMEType() + ";base64," + base64);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
 
         Button saveButton = new Button("Save", event -> {
+            user.setUsername(usernameField.getValue());
             user.setName(nameField.getValue());
             user.setEmail(emailField.getValue());
+            user.setRoles(rolesGroup.getValue());
+
             userRepository.save(user);
             editDialog.close();
+            updateUserGrid();
         });
 
         Button cancelButton = new Button("Cancel", event -> editDialog.close());
 
-        editDialog.add(nameField, emailField, saveButton, cancelButton);
+        HorizontalLayout buttonLayout = new HorizontalLayout(saveButton, cancelButton);
+        buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+
+        VerticalLayout formLayout = new VerticalLayout(
+                usernameField,
+                nameField,
+                emailField,
+                rolesGroup,
+                profileImage,
+                upload,
+                buttonLayout
+        );
+
+        editDialog.add(formLayout);
         editDialog.open();
     }
 
