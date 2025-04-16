@@ -17,6 +17,7 @@ import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
@@ -29,7 +30,7 @@ import java.util.Optional;
 public class HomeView extends Composite<VerticalLayout> {
 
     private final AuthenticatedUser authenticatedUser;
-    // TODO: Add content to home page
+
     public HomeView(AuthenticatedUser authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
 
@@ -137,6 +138,7 @@ public class HomeView extends Composite<VerticalLayout> {
         welcomeText.setText("to start creating!");
         welcomeText.setWidth("fit-content");
         welcomeText.getStyle().set("font-size", "var(--lumo-font-size-xl)");
+        welcomeText.addClassName("custom-welcome");
 
         layoutRow3.addClassName(Gap.MEDIUM);
         layoutRow3.setWidth("100%");
