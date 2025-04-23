@@ -29,6 +29,7 @@ import java.util.*;
 
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
+// TODO: Laita select CampaignDetailsView'hun
 @PageTitle("Campaigns")
 @Route("campaigns")
 @Menu(order = 3, icon = LineAwesomeIconUrl.BOOK_OPEN_SOLID)
