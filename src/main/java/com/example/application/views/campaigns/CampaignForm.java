@@ -1,10 +1,10 @@
 package com.example.application.views.campaigns;
 
-import com.example.application.data.Calendar;
-import com.example.application.data.Campaign;
-import com.example.application.data.User;
-import com.example.application.data.World;
+import com.example.application.data.*;
+import com.example.application.data.repositories.CalendarRepository;
+import com.example.application.data.repositories.MoonRepository;
 import com.example.application.data.repositories.UserRepository;
+import com.example.application.data.repositories.WorldRepository;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -40,13 +40,27 @@ public class CampaignForm extends FormLayout {
     // New fields for creating a new world and calendar
     private final TextField newWorldField = new TextField("New World Name");
     private final TextField newCalendarField = new TextField("New Calendar Name");
+    private final TextField monthsInYearField = new TextField("Months in Year");
+    private final TextField daysInMonthField = new TextField("Days in Month");
+    private final TextField daysInWeekField = new TextField("Days in Week");
+    private final TextField moonCountField = new TextField("Number of Moons");
+    private final TextArea monthNamesField = new TextArea("Month Names (comma-separated)");
+    private final TextArea weekdayNamesField = new TextArea("Weekday Names (comma-separated)");
+    private final List<VerticalLayout> moonFields = new ArrayList<>();
+
     private final RadioButtonGroup<String> worldChoiceGroup = new RadioButtonGroup<>();
     private final RadioButtonGroup<String> calendarChoiceGroup = new RadioButtonGroup<>();
 
     private final UserRepository userRepository;
+    private final WorldRepository worldRepository;
+    private final CalendarRepository calendarRepository;
+    private final MoonRepository moonRepository;
 
-    public CampaignForm(UserRepository userRepository, List<World> userWorlds, List<Calendar> userCalendars,  User loggedInUser, Consumer<Campaign> onSave) {
+    public CampaignForm(UserRepository userRepository, WorldRepository worldRepository, CalendarRepository calendarRepository, MoonRepository moonRepository, List<World> userWorlds, List<Calendar> userCalendars,  User loggedInUser, Consumer<Campaign> onSave) {
         this.userRepository = userRepository;
+        this.worldRepository = worldRepository;
+        this.calendarRepository = calendarRepository;
+        this.moonRepository = moonRepository;
 
         getStyle().set("display", "flex");
         getStyle().set("flexDirection", "column");
@@ -79,7 +93,6 @@ public class CampaignForm extends FormLayout {
         calendarSelector.setItems(userCalendars);
         calendarChoiceGroup.setValue("Create New");
         calendarSelector.setItemLabelGenerator(Calendar::getCalendarName);
-        // TODO: Add Moons to Calendar creation
         // TODO: Add donjon calendar json-compatibility
 
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -96,7 +109,6 @@ public class CampaignForm extends FormLayout {
             }
 
             // Validate world selection
-            // TODO: Create new world to db
             if ("Create New".equals(worldChoiceGroup.getValue()) && newWorldField.getValue().trim().isEmpty()) {
                 newWorldField.setInvalid(true);
                 newWorldField.setErrorMessage("Please enter a new world name.");
@@ -111,7 +123,6 @@ public class CampaignForm extends FormLayout {
             }
 
             // Validate calendar selection
-            // TODO: Create new calendar to db
             if ("Create New".equals(calendarChoiceGroup.getValue()) && newCalendarField.getValue().trim().isEmpty()) {
                 newCalendarField.setInvalid(true);
                 newCalendarField.setErrorMessage("Please enter a new calendar name.");
@@ -125,10 +136,101 @@ public class CampaignForm extends FormLayout {
                 calendarSelector.setInvalid(false);
             }
 
+            // Validate months, days and names if a new calendar is being created
+            if ("Create New".equals(calendarChoiceGroup.getValue())) {
+                int monthsInYear = Integer.parseInt(monthsInYearField.getValue());
+                int daysInWeek = Integer.parseInt(daysInWeekField.getValue());
+                List<String> monthNames = List.of(monthNamesField.getValue().split(","));
+                List<String> weekdayNames = List.of(weekdayNamesField.getValue().split(","));
+
+                // Validate monthsInYear vs monthNames
+                if (monthsInYear != monthNames.size()) {
+                    monthsInYearField.setInvalid(true);
+                    monthsInYearField.setErrorMessage("Months in year must match the number of month names.");
+                    isValid = false;
+                } else {
+                    monthsInYearField.setInvalid(false);
+                }
+
+                // Validate daysInWeek vs weekdayNames
+                if (daysInWeek != weekdayNames.size()) {
+                    daysInWeekField.setInvalid(true);
+                    daysInWeekField.setErrorMessage("Days in week must match the number of weekday names.");
+                    isValid = false;
+                } else {
+                    daysInWeekField.setInvalid(false);
+                }
+            }
+
+            // Validate moons if a new calendar is being created
+            if ("Create New".equals(calendarChoiceGroup.getValue())) {
+                List<Moon> moons = new ArrayList<>();
+                for (VerticalLayout moonLayout : moonFields) {
+                    TextField moonNameField = (TextField) moonLayout.getChildren().findFirst().orElse(null);
+                    if (moonNameField != null && moonNameField.getValue().trim().isEmpty()) {
+                        moonNameField.setInvalid(true);
+                        moonNameField.setErrorMessage("Moon name cannot be empty.");
+                        isValid = false;
+                    } else {
+                        moonNameField.setInvalid(false);
+                    }
+                }
+            }
+
             if (isValid) {
+                // Campaign
                 Campaign campaign = new Campaign();
                 campaign.setCampaignName(nameField.getValue());
                 campaign.setCampaignDescription(descriptionField.getValue());
+
+                // World
+                World selectedWorld = null;
+                if ("Create New".equals(worldChoiceGroup.getValue())) {
+                    String newWorldName = newWorldField.getValue().trim();
+                    selectedWorld = new World();
+                    selectedWorld.setWorldName(newWorldName);
+                    selectedWorld = worldRepository.save(selectedWorld);
+                } else {
+                    selectedWorld = worldSelector.getValue();
+                }
+                campaign.setCampaignWorld(selectedWorld);
+
+                // Calendar
+                Calendar selectedCalendar = null;
+                if ("Create New".equals(calendarChoiceGroup.getValue())) {
+                    String newCalendarName = newCalendarField.getValue().trim();
+                    selectedCalendar = new Calendar();
+                    selectedCalendar.setCalendarName(newCalendarName);
+                    selectedCalendar.setMonthsInYear(Integer.parseInt(monthsInYearField.getValue()));
+                    selectedCalendar.setDaysInMonth(Integer.parseInt(daysInMonthField.getValue()));
+                    selectedCalendar.setDaysInWeek(Integer.parseInt(daysInWeekField.getValue()));
+                    selectedCalendar.setMonthNames(List.of(monthNamesField.getValue().split(",")));
+                    selectedCalendar.setWeekdayNames(List.of(weekdayNamesField.getValue().split(",")));
+
+                    // Create moons
+                    List<Moon> moons = new ArrayList<>();
+                    int moonCount = Integer.parseInt(moonCountField.getValue());
+                    for (int i = 0; i < moonCount; i++) {
+                        VerticalLayout moonLayout = moonFields.get(i);
+                        TextField moonNameField = (TextField) moonLayout.getChildren().findFirst().orElse(null);
+                        TextField cycleField = (TextField) moonLayout.getChildren().skip(1).findFirst().orElse(null);
+                        TextField shiftField = (TextField) moonLayout.getChildren().skip(2).findFirst().orElse(null);
+
+                        Moon moon = new Moon();
+                        moon.setMoonName(moonNameField.getValue());
+                        moon.setCycle(Double.parseDouble(cycleField.getValue()));
+                        moon.setShift(Integer.parseInt(shiftField.getValue()));
+                        moon.setCalendar(selectedCalendar);
+                        moons.add(moon);
+                        moonRepository.save(moon);
+                    }
+
+                    selectedCalendar.setMoons(moons);
+                    selectedCalendar = calendarRepository.save(selectedCalendar);
+                } else {
+                    selectedCalendar = calendarSelector.getValue();
+                }
+                campaign.setCalendar(selectedCalendar);
 
                 // Add GM(s) & Players
                 campaign.setGms(selectedGms);
@@ -229,11 +331,32 @@ public class CampaignForm extends FormLayout {
             }
         });
 
+        // Handle adding moon fields
+        moonCountField.addValueChangeListener(event -> {
+            String moonCountValue = moonCountField.getValue();
+            int newMoonCount = Integer.parseInt(moonCountValue);
+
+            // Moon count grows
+            if (newMoonCount > moonFields.size()) {
+                for (int i = moonFields.size(); i < newMoonCount; i++) {
+                    addMoonFields();
+                }
+            }
+
+            // TODO: Fix field amount if moon count lessens
+            else if (newMoonCount < moonFields.size()) {
+                for (int i = moonFields.size() - 1; i >= newMoonCount; i--) {
+                    moonFields.remove(i);
+                }
+            }
+        });
+
         // Add components to the form
         add(
                 nameField, descriptionField,
                 worldChoiceGroup, worldSelector, newWorldField,
                 calendarChoiceGroup, calendarSelector, newCalendarField,
+                monthsInYearField, daysInMonthField, monthNamesField, daysInWeekField, weekdayNamesField, moonCountField,
                 currentGmsField, gmField, addGmButton,
                 currentPlayersField, playerField, addPlayerButton,
                 saveButton
@@ -250,5 +373,19 @@ public class CampaignForm extends FormLayout {
         boolean isCreateNew = "Create New".equals(choice);
         calendarSelector.setVisible(!isCreateNew);
         newCalendarField.setVisible(isCreateNew);
+        calendarSelector.setVisible(!isCreateNew);
+        monthsInYearField.setVisible(isCreateNew);
+        daysInMonthField.setVisible(isCreateNew);
+        daysInWeekField.setVisible(isCreateNew);
+        moonCountField.setVisible(isCreateNew);
+        monthNamesField.setVisible(isCreateNew);
+        weekdayNamesField.setVisible(isCreateNew);
+    }
+
+    private void addMoonFields() {
+        VerticalLayout moonLayout = new VerticalLayout();
+        moonLayout.add(new TextField("Moon Name"), new TextField("Cycle"), new TextField("Shift"));
+        moonFields.add(moonLayout);
+        add(moonLayout);
     }
 }

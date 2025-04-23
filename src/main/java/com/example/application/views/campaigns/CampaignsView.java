@@ -4,10 +4,7 @@ import com.example.application.data.Calendar;
 import com.example.application.data.Campaign;
 import com.example.application.data.User;
 import com.example.application.data.World;
-import com.example.application.data.repositories.CalendarRepository;
-import com.example.application.data.repositories.CampaignRepository;
-import com.example.application.data.repositories.UserRepository;
-import com.example.application.data.repositories.WorldRepository;
+import com.example.application.data.repositories.*;
 import com.example.application.security.AuthenticatedUser;
 import com.example.application.services.CampaignService;
 import com.vaadin.flow.component.Component;
@@ -42,6 +39,9 @@ public class CampaignsView extends Composite<VerticalLayout> {
 
     private final CampaignRepository campaignRepository;
     private final UserRepository userRepository;
+    private final WorldRepository worldRepository;
+    private final CalendarRepository calendarRepository;
+    private final MoonRepository moonRepository;
     private final CampaignService campaignService;
     private final AuthenticatedUser authenticatedUser;
 
@@ -52,9 +52,12 @@ public class CampaignsView extends Composite<VerticalLayout> {
 
     private final SplitLayout splitLayout = new SplitLayout();
 
-    public CampaignsView(CampaignRepository campaignRepository, UserRepository userRepository, CampaignService campaignService, AuthenticatedUser authenticatedUser) {
+    public CampaignsView(CampaignRepository campaignRepository, UserRepository userRepository, WorldRepository worldRepository, CalendarRepository calendarRepository, MoonRepository moonRepository, CampaignService campaignService, AuthenticatedUser authenticatedUser) {
         this.campaignRepository = campaignRepository;
         this.userRepository = userRepository;
+        this.worldRepository = worldRepository;
+        this.calendarRepository = calendarRepository;
+        this.moonRepository = moonRepository;
         this.campaignService = campaignService;
         this.authenticatedUser = authenticatedUser;
 
@@ -130,7 +133,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         List<World> userWorlds = campaignService.getWorldsForUser(user);
         List<Calendar> userCalendars = campaignService.getCalendarsForUser(user);
 
-        CampaignForm form = new CampaignForm(userRepository, userWorlds, userCalendars, user, campaign -> {
+        CampaignForm form = new CampaignForm(userRepository, worldRepository, calendarRepository, moonRepository, userWorlds, userCalendars, user, campaign -> {
             campaignRepository.save(campaign);
             UI.getCurrent().getPage().reload();
         });
@@ -209,7 +212,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         List<World> userWorlds = campaignService.getWorldsForUser(user);
         List<Calendar> userCalendars = campaignService.getCalendarsForUser(user);
 
-        CampaignForm form = new CampaignForm(userRepository,userWorlds, userCalendars, user, campaign -> {
+        CampaignForm form = new CampaignForm(userRepository, worldRepository, calendarRepository, moonRepository, userWorlds, userCalendars, user, campaign -> {
             campaignRepository.save(campaign);
             UI.getCurrent().getPage().reload();
         });
