@@ -44,7 +44,7 @@ public class EncyclopediaView extends Composite<VerticalLayout> {
         formLayout2Col.getStyle().set("flex-grow", "1");
 
         // TODO: Create select for item type
-        // TODO: Add Tabs for each item type?
+        // TODO: Add Tabs for each item type: World, Area, Location (+history to all), Calendar, Moon ...
         // TODO: Show all encyclopedia items
         // TODO: Add form to create/edit Encyclopedia items
 

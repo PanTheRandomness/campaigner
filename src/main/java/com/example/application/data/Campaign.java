@@ -22,7 +22,7 @@ public class Campaign extends AbstractEntity {
     @OneToMany(mappedBy = "campaign")
     private List<Event> events;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "campaign_gms",
             joinColumns = @JoinColumn(name = "campaign_id"),
@@ -30,7 +30,7 @@ public class Campaign extends AbstractEntity {
     )
     private List<User> gms;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "campaign_players",
             joinColumns = @JoinColumn(name = "campaign_id"),

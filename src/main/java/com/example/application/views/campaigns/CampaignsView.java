@@ -63,8 +63,9 @@ public class CampaignsView extends Composite<VerticalLayout> {
 
         HorizontalLayout layoutRow = new HorizontalLayout();
         Button createButton = new Button("Create New");
-        // TODO: Add Edit Button
-        // TODO: Add Remove Button only when owned campaign is selected
+        Button editButton = new Button("Edit");
+        Button deleteButton = new Button("Delete");
+        deleteButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
 
         getContent().setSpacing(false);
         getContent().setWidth("100%");
@@ -81,9 +82,25 @@ public class CampaignsView extends Composite<VerticalLayout> {
 
         createButton.setWidth("min-content");
         createButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        createButton.addClickListener(e -> openCampaignCreationView());
+        createButton.addClickListener(e -> openCampaignFormView(null));
 
-        layoutRow.add(campaignSelect, createButton);
+        editButton.setWidth("min-content");
+        editButton.addClickListener(e -> openCampaignFormView(campaignSelect.getValue()));
+        editButton.setEnabled(false);
+
+        deleteButton.setWidth("min-content");
+        deleteButton.addClickListener(e -> confirmAndDeleteCampaign(campaignSelect.getValue()));
+        deleteButton.setEnabled(false);
+
+        // Enable/disable edit and delete buttons based on campaign selection
+        campaignSelect.addValueChangeListener(event -> {
+            Campaign selectedCampaign = event.getValue();
+            boolean campaignSelected = selectedCampaign != null;
+            editButton.setEnabled(campaignSelected);
+            deleteButton.setEnabled(campaignSelected);
+        });
+
+        layoutRow.add(campaignSelect, createButton, editButton, deleteButton);
         getContent().add(layoutRow);
 
         splitLayout.setSizeFull();
@@ -133,10 +150,14 @@ public class CampaignsView extends Composite<VerticalLayout> {
         List<World> userWorlds = campaignService.getWorldsForUser(user);
         List<Calendar> userCalendars = campaignService.getCalendarsForUser(user);
 
-        CampaignForm form = new CampaignForm(userRepository, worldRepository, calendarRepository, moonRepository, userWorlds, userCalendars, user, campaign -> {
-            campaignRepository.save(campaign);
-            UI.getCurrent().getPage().reload();
-        });
+        CampaignForm form = new CampaignForm(userRepository, worldRepository, calendarRepository,
+                moonRepository, userWorlds, userCalendars, user,
+                campaign -> {
+                    campaignRepository.save(campaign);
+                    UI.getCurrent().getPage().reload();
+                },
+                null
+        );
 
         splitLayout.addToSecondary(form);
     }
@@ -197,7 +218,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         overviewPage.setVisible(true);
     }
 
-    private void openCampaignCreationView() {
+    private void openCampaignFormView(Campaign campaignToEdit) {
         Optional<User> maybeUser = authenticatedUser.get();
         if (maybeUser.isEmpty()) {
             showNoCampaignsView();
@@ -212,13 +233,36 @@ public class CampaignsView extends Composite<VerticalLayout> {
         List<World> userWorlds = campaignService.getWorldsForUser(user);
         List<Calendar> userCalendars = campaignService.getCalendarsForUser(user);
 
-        CampaignForm form = new CampaignForm(userRepository, worldRepository, calendarRepository, moonRepository, userWorlds, userCalendars, user, campaign -> {
-            campaignRepository.save(campaign);
-            UI.getCurrent().getPage().reload();
-        });
+        CampaignForm form = new CampaignForm(
+                userRepository,
+                worldRepository,
+                calendarRepository,
+                moonRepository,
+                userWorlds,
+                userCalendars,
+                user,
+                campaign -> {
+                    campaignRepository.save(campaign);
+                    UI.getCurrent().getPage().reload();
+                },
+                campaignToEdit
+        );
+
+        if (campaignToEdit != null) {
+            form.fillFormWithCampaignData(campaignToEdit);
+        }
 
         splitLayout.remove(splitLayout.getSecondaryComponent());
-
         splitLayout.addToSecondary(form);
+    }
+
+    private void confirmAndDeleteCampaign(Campaign campaign) {
+        UI.getCurrent().getPage().executeJs("return confirm('Are you sure you want to delete this campaign?');")
+                .then(Boolean.class, confirmDelete -> {
+                    if (Boolean.TRUE.equals(confirmDelete)) {
+                        campaignRepository.delete(campaign);
+                        UI.getCurrent().getPage().reload();
+                    }
+                });
     }
 }
