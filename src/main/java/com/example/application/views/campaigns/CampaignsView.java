@@ -21,9 +21,7 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
-import com.vaadin.flow.router.Menu;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import jakarta.annotation.security.PermitAll;
 
@@ -35,7 +33,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 @Route("campaigns")
 @Menu(order = 3, icon = LineAwesomeIconUrl.BOOK_OPEN_SOLID)
 @PermitAll
-public class CampaignsView extends Composite<VerticalLayout> {
+public class CampaignsView extends Composite<VerticalLayout> implements AfterNavigationObserver {
 
     private final CampaignRepository campaignRepository;
     private final UserRepository userRepository;
@@ -92,12 +90,19 @@ public class CampaignsView extends Composite<VerticalLayout> {
         deleteButton.addClickListener(e -> confirmAndDeleteCampaign(campaignSelect.getValue()));
         deleteButton.setEnabled(false);
 
-        // Enable/disable edit and delete buttons based on campaign selection
         campaignSelect.addValueChangeListener(event -> {
             Campaign selectedCampaign = event.getValue();
             boolean campaignSelected = selectedCampaign != null;
             editButton.setEnabled(campaignSelected);
             deleteButton.setEnabled(campaignSelected);
+
+            if (campaignSelected) {
+                updateTabs(selectedCampaign);
+                UI.getCurrent().navigate("campaigns/campaign/" + selectedCampaign.getId() + "/overview");
+            } else {
+                tabs.removeAll();
+                pages.removeAll();
+            }
         });
 
         layoutRow.add(campaignSelect, createButton, editButton, deleteButton);
@@ -142,24 +147,9 @@ public class CampaignsView extends Composite<VerticalLayout> {
 
         campaignSelect.setItems(campaigns);
         campaignSelect.setItemLabelGenerator(Campaign::getCampaignName);
-        campaignSelect.addValueChangeListener(event -> updateTabs(event.getValue()));
 
-        // Select the first campaign by default
-        campaignSelect.setValue(campaigns.iterator().next());
-
-        List<World> userWorlds = campaignService.getWorldsForUser(user);
-        List<Calendar> userCalendars = campaignService.getCalendarsForUser(user);
-
-        CampaignForm form = new CampaignForm(userRepository, worldRepository, calendarRepository,
-                moonRepository, userWorlds, userCalendars, user,
-                campaign -> {
-                    campaignRepository.save(campaign);
-                    UI.getCurrent().getPage().reload();
-                },
-                null
-        );
-
-        splitLayout.addToSecondary(form);
+        tabs.setVisible(false);
+        pages.setVisible(false);
     }
 
     private void showNoCampaignsView() {
@@ -204,18 +194,6 @@ public class CampaignsView extends Composite<VerticalLayout> {
         tabsToPages.put(worldTab, worldPage);
 
         pages.add(overviewPage, timelinePage, playersPage, worldPage);
-        tabs.addSelectedChangeListener(event -> {
-            tabsToPages.values().forEach(page -> page.setVisible(false));
-            Component selectedPage = tabsToPages.get(tabs.getSelectedTab());
-            if (selectedPage != null) {
-                selectedPage.setVisible(true);
-            }
-        });
-
-        // Show the first tab by default
-        tabs.setSelectedTab(overviewTab);
-        tabsToPages.values().forEach(page -> page.setVisible(false));
-        overviewPage.setVisible(true);
     }
 
     private void openCampaignFormView(Campaign campaignToEdit) {
@@ -264,5 +242,41 @@ public class CampaignsView extends Composite<VerticalLayout> {
                         UI.getCurrent().getPage().reload();
                     }
                 });
+    }
+
+    @Override
+    public void afterNavigation(AfterNavigationEvent event) {
+        String path = event.getLocation().getPath();
+        if (path.startsWith("campaigns/campaign/")) {
+            String[] segments = path.split("/");
+            if (segments.length >= 4) {
+                String campaignId = segments[2];
+                String selectedTab = segments[3];
+
+                Optional<Campaign> campaignOpt = campaignRepository.findById(Long.valueOf(campaignId));
+                if (campaignOpt.isPresent()) {
+                    Campaign selectedCampaign = campaignOpt.get();
+                    campaignSelect.setValue(selectedCampaign);
+                    updateTabs(selectedCampaign);
+
+                    tabs.getChildren().forEach(tab -> {
+                        if (tab instanceof Tab) {
+                            Tab tabComponent = (Tab) tab;
+                            if (tabComponent.getLabel().equalsIgnoreCase(selectedTab)) {
+                                tabs.setSelectedTab(tabComponent);
+                            }
+                        }
+                    });
+
+                    tabsToPages.values().forEach(page -> page.setVisible(false));
+                    Component selectedPage = tabsToPages.get(tabs.getSelectedTab());
+                    if (selectedPage != null) {
+                        selectedPage.setVisible(true);
+                    }
+                } else {
+                    showNoCampaignsView();
+                }
+            }
+        }
     }
 }
