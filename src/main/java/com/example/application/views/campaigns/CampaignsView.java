@@ -127,11 +127,10 @@ public class CampaignsView extends Composite<VerticalLayout> {
         // Select the first campaign by default
         campaignSelect.setValue(campaigns.iterator().next());
 
-        List<User> allUsers = userRepository.findAll();
         List<World> userWorlds = campaignService.getWorldsForUser(user);
         List<Calendar> userCalendars = campaignService.getCalendarsForUser(user);
 
-        CampaignForm form = new CampaignForm(allUsers, userWorlds, userCalendars, user, campaign -> {
+        CampaignForm form = new CampaignForm(userRepository, userWorlds, userCalendars, user, campaign -> {
             campaignRepository.save(campaign);
             UI.getCurrent().getPage().reload();
         });
@@ -207,11 +206,10 @@ public class CampaignsView extends Composite<VerticalLayout> {
         campaigns.addAll(user.getGmCampaigns());
         campaigns.addAll(user.getPlayerCampaigns());
 
-        List<User> allUsers = userRepository.findAll();
         List<World> userWorlds = campaignService.getWorldsForUser(user);
         List<Calendar> userCalendars = campaignService.getCalendarsForUser(user);
 
-        CampaignForm form = new CampaignForm(allUsers, userWorlds, userCalendars, user, campaign -> {
+        CampaignForm form = new CampaignForm(userRepository,userWorlds, userCalendars, user, campaign -> {
             campaignRepository.save(campaign);
             UI.getCurrent().getPage().reload();
         });
