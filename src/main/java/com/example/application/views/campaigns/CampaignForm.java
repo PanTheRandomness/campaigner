@@ -58,31 +58,84 @@ public class CampaignForm extends FormLayout {
         List<User> selectedPlayers = new ArrayList<>();
         selectedGms.add(loggedInUser);
 
+        // Default visibility for world & calendar
+        worldSelector.setVisible(false);
+        calendarSelector.setVisible(false);
+        newWorldField.setVisible(true);
+        newCalendarField.setVisible(true);
+
         // Set up the RadioButtonGroups for selecting existing or creating new
         worldChoiceGroup.setLabel("Choose World");
-        worldChoiceGroup.setItems("Select Existing", "Create New");
+        worldChoiceGroup.setItems("Create New", "Select Existing");
+        worldChoiceGroup.setValue("Create New");
         worldChoiceGroup.addValueChangeListener(event -> updateWorldFields(event.getValue()));
 
         calendarChoiceGroup.setLabel("Choose Calendar");
-        calendarChoiceGroup.setItems("Select Existing", "Create New");
+        calendarChoiceGroup.setItems("Create New", "Select Existing");
         calendarChoiceGroup.addValueChangeListener(event -> updateCalendarFields(event.getValue()));
 
         worldSelector.setItems(userWorlds);
         worldSelector.setItemLabelGenerator(World::getWorldName);
         calendarSelector.setItems(userCalendars);
+        calendarChoiceGroup.setValue("Create New");
         calendarSelector.setItemLabelGenerator(Calendar::getCalendarName);
+        // TODO: Add Moons to Calendar creation
+        // TODO: Add donjon calendar json-compatibility
 
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         saveButton.addClickListener(event -> {
-            Campaign campaign = new Campaign();
-            campaign.setCampaignName(nameField.getValue());
-            campaign.setCampaignDescription(descriptionField.getValue());
+            boolean isValid = true;
 
-            // Add GM(s) & Players
-            campaign.setGms(selectedGms);
-            campaign.setPlayers(selectedPlayers);
+            // Validate campaign name
+            if (nameField.getValue().trim().isEmpty()) {
+                nameField.setInvalid(true);
+                nameField.setErrorMessage("Campaign name cannot be empty.");
+                isValid = false;
+            } else {
+                nameField.setInvalid(false);
+            }
 
-            onSave.accept(campaign);
+            // Validate world selection
+            // TODO: Create new world to db
+            if ("Create New".equals(worldChoiceGroup.getValue()) && newWorldField.getValue().trim().isEmpty()) {
+                newWorldField.setInvalid(true);
+                newWorldField.setErrorMessage("Please enter a new world name.");
+                isValid = false;
+            } else if ("Select Existing".equals(worldChoiceGroup.getValue()) && worldSelector.getValue() == null) {
+                worldSelector.setInvalid(true);
+                worldSelector.setErrorMessage("Please select a world.");
+                isValid = false;
+            } else {
+                newWorldField.setInvalid(false);
+                worldSelector.setInvalid(false);
+            }
+
+            // Validate calendar selection
+            // TODO: Create new calendar to db
+            if ("Create New".equals(calendarChoiceGroup.getValue()) && newCalendarField.getValue().trim().isEmpty()) {
+                newCalendarField.setInvalid(true);
+                newCalendarField.setErrorMessage("Please enter a new calendar name.");
+                isValid = false;
+            } else if ("Select Existing".equals(calendarChoiceGroup.getValue()) && calendarSelector.getValue() == null) {
+                calendarSelector.setInvalid(true);
+                calendarSelector.setErrorMessage("Please select a calendar.");
+                isValid = false;
+            } else {
+                newCalendarField.setInvalid(false);
+                calendarSelector.setInvalid(false);
+            }
+
+            if (isValid) {
+                Campaign campaign = new Campaign();
+                campaign.setCampaignName(nameField.getValue());
+                campaign.setCampaignDescription(descriptionField.getValue());
+
+                // Add GM(s) & Players
+                campaign.setGms(selectedGms);
+                campaign.setPlayers(selectedPlayers);
+
+                onSave.accept(campaign);
+            }
         });
 
         // Setup VirtualLists
@@ -177,7 +230,14 @@ public class CampaignForm extends FormLayout {
         });
 
         // Add components to the form
-        add(nameField, descriptionField, currentGmsField, gmField, addGmButton, currentPlayersField, playerField, addPlayerButton, worldChoiceGroup, worldSelector, newWorldField, calendarChoiceGroup, calendarSelector, newCalendarField, saveButton);
+        add(
+                nameField, descriptionField,
+                worldChoiceGroup, worldSelector, newWorldField,
+                calendarChoiceGroup, calendarSelector, newCalendarField,
+                currentGmsField, gmField, addGmButton,
+                currentPlayersField, playerField, addPlayerButton,
+                saveButton
+        );
     }
 
     private void updateWorldFields(String choice) {
