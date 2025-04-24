@@ -12,8 +12,13 @@ import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.grid.ColumnTextAlign;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -170,21 +175,89 @@ public class CampaignsView extends Composite<VerticalLayout> {
         tabs.removeAll();
         pages.removeAll();
         tabsToPages.clear();
-        Tab overviewTab = new Tab("Overview");
-        Tab timelineTab = new Tab("Timeline");
-        Tab playersTab = new Tab("Players");
-        Tab worldTab = new Tab("World");
+
+        Tab overviewTab = new Tab(VaadinIcon.ARCHIVE.create(), new Span("Overview"));
+        Tab timelineTab = new Tab(VaadinIcon.ROAD_BRANCHES.create(), new Span("Timelines"));
+        Tab playersTab = new Tab(VaadinIcon.USERS.create(), new Span("Players"));
+        Tab worldTab = new Tab(VaadinIcon.GLOBE.create(), new Span("World"));
+
         tabs.add(overviewTab, timelineTab, playersTab, worldTab);
+
+        // TODO: Customize all Tab Content
         Div overviewPage = new Div(new Paragraph("Overview content for " + campaign.getCampaignName()));
+
+        VerticalLayout timelinesLayout = new VerticalLayout();
+        HorizontalLayout timelineLayout = new HorizontalLayout();
+        HorizontalLayout eventsLayout = new HorizontalLayout();
+
+        // TODO: Add content to Events
+        // TODO: Relocate Events view to here
+        timelinesLayout.add(timelineLayout, eventsLayout);
+
         Div timelinePage = new Div(new Paragraph("Timeline content for " + campaign.getCampaignName()));
-        Div playersPage = new Div(new Paragraph("Players content for " + campaign.getCampaignName()));
+
+        // Grid for Players & GMs
+        H3 playerGridTitle = new H3(campaign.getCampaignName() + "'s GMs & players");
+        Grid<User> playerGrid = new Grid<>(User.class, false);
+        List<User> gms = userRepository.findByGmCampaigns(campaign);
+        List<User> players = userRepository.findByPlayerCampaigns(campaign);
+
+        // TODO: Fix playerGrid height!
+        playerGrid.setWidth("100%");
+        playerGrid.setHeight("100%");
+        playerGrid.getStyle().set("font-size", "var(--lumo-font-size-l)");
+
+        playerGrid.addColumn(User::getUsername)
+                .setHeader("Username")
+                .setAutoWidth(true)
+                .setTextAlign(ColumnTextAlign.START);
+
+        playerGrid.addColumn(User::getName)
+                .setHeader("Name")
+                .setAutoWidth(true)
+                .setTextAlign(ColumnTextAlign.START);
+
+        // Map user roles to be "GM" or "Player"
+        Map<User, String> roleMap = new LinkedHashMap<>();
+        gms.forEach(gm -> roleMap.put(gm, "GM"));
+        players.forEach(player -> roleMap.put(player, "Player"));
+
+        playerGrid.addColumn(user -> roleMap.get(user))
+                .setHeader("Role")
+                .setAutoWidth(true)
+                .setTextAlign(ColumnTextAlign.CENTER);
+
+        Map<User, String> characterMap = new LinkedHashMap<>();
+        gms.forEach(gm -> characterMap.put(gm, "-"));
+        // TODO: Add Characters when Character Entities have been added
+
+        playerGrid.addColumn(user -> characterMap.get(user))
+                .setHeader("Character")
+                .setAutoWidth(true)
+                .setTextAlign(ColumnTextAlign.CENTER);
+
+        playerGrid.setItems(roleMap.keySet());
+
+        VerticalLayout playersLayout = new VerticalLayout();
+        playersLayout.setSizeFull();
+        playersLayout.setPadding(false);
+        playersLayout.setSpacing(false);
+        playersLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
+        playersLayout.add(playerGridTitle, playerGrid);
+
+        Div playersPage = new Div(playersLayout);
+        playersPage.setSizeFull();
+
         Div worldPage = new Div(new Paragraph("World content for " + campaign.getCampaignName()));
+
         tabsToPages.put(overviewTab, overviewPage);
         tabsToPages.put(timelineTab, timelinePage);
         tabsToPages.put(playersTab, playersPage);
         tabsToPages.put(worldTab, worldPage);
 
         pages.add(overviewPage, timelinePage, playersPage, worldPage);
+        pages.setSizeFull();
+
         tabs.addSelectedChangeListener(event -> {
             tabsToPages.values().forEach(page -> page.setVisible(false));
             Component selectedPage = tabsToPages.get(tabs.getSelectedTab());
