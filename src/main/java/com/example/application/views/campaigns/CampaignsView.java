@@ -2,6 +2,7 @@ package com.example.application.views.campaigns;
 
 import com.example.application.data.*;
 import com.example.application.data.Calendar;
+import com.example.application.data.Event;
 import com.example.application.data.repositories.*;
 import com.example.application.security.AuthenticatedUser;
 import com.example.application.services.CampaignService;
@@ -10,12 +11,11 @@ import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -24,12 +24,18 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.*;
+import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import jakarta.annotation.security.PermitAll;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
+import org.vaadin.addons.tatu.ColorPicker;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
 @PageTitle("Campaigns")
@@ -201,6 +207,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         // TODO: Timeline
         H3 timelineTitle = new H3("Campaign Timeline");
         Div timelinePlaceholder = new Div(new Paragraph("Timeline will be here, eventually."));
+        Hr hr = new Hr();
 
         // Events
         H3 eventGridTitle = new H3("Campaign Events");
@@ -215,16 +222,38 @@ public class CampaignsView extends Composite<VerticalLayout> {
         Button addEventButton = new Button("Add Event");
 
         // Event Editor
+        // TODO: Show only to GMs
         H3 editEventTitle = new H3("Event Editor");
+
+        TextField eventNameField = new TextField("Event Name");
+        TextArea eventDescriptionField = new TextArea("Event Description");
+        Checkbox privateEvent = new Checkbox("Event is private?");
+
+        // TODO: Add Event Type or select existing
+        TextField eventTypeNameField = new TextField("Event Type Name");
+        ColorPicker eventTypeColorPicker = new ColorPicker(); // TODO: Add listener
+
+        // TODO: event duration functionality
+        DatePicker eventStartDateField = new DatePicker("Event Start Date");
+        DatePicker eventEndDateField = new DatePicker("Event End Date");
+        EventDuration eventDuration = new EventDuration();
+
+        // TODO: Add Place or select existing
+        TextField newEventPlace = new TextField("New Event Place");
+        Select<Place> eventPlaceSelect = new Select<>(); // TODO: Add Listener
+
+        Select<ReoccurrenceType> reoccurrenceTypeSelect = new Select<>(); // TODO: Add Listener & Data
+
         Button cancelEventEditButton = new Button("Cancel New Event");
         Button saveEventButton = new Button("Save Event");
+        saveEventButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         // Layouts
         VerticalLayout timelineRowLayout = new VerticalLayout();
-        HorizontalLayout eventsRowHeading = new HorizontalLayout();
-        VerticalLayout eventsRowLayout = new VerticalLayout();
-        VerticalLayout newEventRow = new VerticalLayout();
-
+        HorizontalLayout eventsHeadingLayout = new HorizontalLayout();
+        VerticalLayout eventsLayout = new VerticalLayout();
+        VerticalLayout newEventLayout = new VerticalLayout();
+        HorizontalLayout newEventButtonLayout = new HorizontalLayout();
 
         // TODO: Manage event visibility based on event's private-attribute
         // Add Columns to eventGrid
@@ -261,7 +290,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
                 .setTextAlign(ColumnTextAlign.START);
 
         eventGrid.addComponentColumn(selectedEvent -> {
-            Button editButton = new Button("Edit", event -> editEvent(selectedEvent, eventsRowLayout, newEventRow));
+            Button editButton = new Button("Edit", event -> editEvent(selectedEvent, eventsLayout, newEventLayout));
             editButton.getStyle().set("margin-right", "8px");
 
             Button removeButton = new Button("Remove", event -> removeEvent(selectedEvent));
@@ -272,40 +301,51 @@ public class CampaignsView extends Composite<VerticalLayout> {
         addEventButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         addEventButton.addClickListener(e -> {
-            eventsRowLayout.setVisible(false);
-            newEventRow.setVisible(true);
+            eventsLayout.setVisible(false);
+            newEventLayout.setVisible(true);
         });
 
         cancelEventEditButton.addClickListener(e -> {
-            newEventRow.setVisible(false);
-            eventsRowLayout.setVisible(true);
+            newEventLayout.setVisible(false);
+            eventsLayout.setVisible(true);
         });
 
         saveEventButton.addClickListener(e -> {
             // TODO: Save new event / save modified event
-            newEventRow.setVisible(false);
-            eventsRowLayout.setVisible(true);
+            newEventLayout.setVisible(false);
+            eventsLayout.setVisible(true);
         });
 
-        // Sizes
-        timelineRowLayout.setSizeFull();
-        eventsRowLayout.setSizeFull();
-
-        timelineRowLayout.add(timelineTitle, timelinePlaceholder);
-        eventsRowHeading.add(eventGridTitle, addEventButton);
-        eventsRowLayout.add(eventsRowHeading, eventGrid);
-        newEventRow.add(editEventTitle, cancelEventEditButton, saveEventButton);
+        // Add Components to Layouts
+        timelineRowLayout.add(timelineTitle, timelinePlaceholder, hr);
+        eventsHeadingLayout.add(eventGridTitle, addEventButton);
+        eventsLayout.add(eventsHeadingLayout, eventGrid);
+        newEventButtonLayout.add(cancelEventEditButton, saveEventButton);
+        newEventLayout.add(
+                editEventTitle,
+                eventNameField, eventDescriptionField,
+                privateEvent,
+                eventTypeNameField, eventTypeColorPicker,
+                eventStartDateField, eventEndDateField,
+                newEventPlace, eventPlaceSelect,
+                reoccurrenceTypeSelect,
+                newEventButtonLayout
+        );
 
         // Set default visibility for timeline-tab
         timelineRowLayout.setVisible(true);
-        eventsRowLayout.setVisible(true);
-        newEventRow.setVisible(false);
+        eventsLayout.setVisible(true);
+        newEventLayout.setVisible(false);
+
+        timelineRowLayout.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.STRETCH);
+        eventsLayout.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.STRETCH);
+        newEventLayout.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.STRETCH);
 
         VerticalLayout timelineLayout = new VerticalLayout();
         timelineLayout.setSizeFull();
         timelineLayout.setPadding(false);
         timelineLayout.setSpacing(true);
-        timelineLayout.add(timelineRowLayout, eventsRowLayout, newEventRow);
+        timelineLayout.add(timelineRowLayout, eventsLayout, newEventLayout);
 
         Div timelinePage = new Div(timelineLayout);
         timelinePage.setSizeFull(); // This is important for page size!!
@@ -354,7 +394,8 @@ public class CampaignsView extends Composite<VerticalLayout> {
         playersLayout.setSizeFull();
         playersLayout.setPadding(false);
         playersLayout.setSpacing(false);
-        playersLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
+        // playersLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
+        playersLayout.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.STRETCH);
         playersLayout.add(playerGridTitle, playerGrid);
 
         Div playersPage = new Div(playersLayout);
