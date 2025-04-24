@@ -29,12 +29,11 @@ import java.util.*;
 
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
-// TODO: Laita select CampaignDetailsView'hun
 @PageTitle("Campaigns")
 @Route("campaigns")
 @Menu(order = 3, icon = LineAwesomeIconUrl.BOOK_OPEN_SOLID)
 @PermitAll
-public class CampaignsView extends Composite<VerticalLayout> implements AfterNavigationObserver {
+public class CampaignsView extends Composite<VerticalLayout> {
 
     private final CampaignRepository campaignRepository;
     private final UserRepository userRepository;
@@ -99,10 +98,6 @@ public class CampaignsView extends Composite<VerticalLayout> implements AfterNav
 
             if (campaignSelected) {
                 updateTabs(selectedCampaign);
-                UI.getCurrent().navigate("campaigns/campaign/" + selectedCampaign.getId() + "/overview");
-            } else {
-                tabs.removeAll();
-                pages.removeAll();
             }
         });
 
@@ -148,9 +143,8 @@ public class CampaignsView extends Composite<VerticalLayout> implements AfterNav
 
         campaignSelect.setItems(campaigns);
         campaignSelect.setItemLabelGenerator(Campaign::getCampaignName);
-
-        tabs.setVisible(false);
-        pages.setVisible(false);
+        campaignSelect.addValueChangeListener(event -> updateTabs(event.getValue()));
+        campaignSelect.setValue(campaigns.iterator().next());
     }
 
     private void showNoCampaignsView() {
@@ -176,25 +170,33 @@ public class CampaignsView extends Composite<VerticalLayout> implements AfterNav
         tabs.removeAll();
         pages.removeAll();
         tabsToPages.clear();
-
         Tab overviewTab = new Tab("Overview");
         Tab timelineTab = new Tab("Timeline");
         Tab playersTab = new Tab("Players");
         Tab worldTab = new Tab("World");
-
         tabs.add(overviewTab, timelineTab, playersTab, worldTab);
-
         Div overviewPage = new Div(new Paragraph("Overview content for " + campaign.getCampaignName()));
         Div timelinePage = new Div(new Paragraph("Timeline content for " + campaign.getCampaignName()));
         Div playersPage = new Div(new Paragraph("Players content for " + campaign.getCampaignName()));
         Div worldPage = new Div(new Paragraph("World content for " + campaign.getCampaignName()));
-
         tabsToPages.put(overviewTab, overviewPage);
         tabsToPages.put(timelineTab, timelinePage);
         tabsToPages.put(playersTab, playersPage);
         tabsToPages.put(worldTab, worldPage);
 
         pages.add(overviewPage, timelinePage, playersPage, worldPage);
+        tabs.addSelectedChangeListener(event -> {
+            tabsToPages.values().forEach(page -> page.setVisible(false));
+            Component selectedPage = tabsToPages.get(tabs.getSelectedTab());
+            if (selectedPage != null) {
+                selectedPage.setVisible(true);
+            }
+        });
+
+        // Show the first tab by default
+        tabs.setSelectedTab(overviewTab);
+        tabsToPages.values().forEach(page -> page.setVisible(false));
+        overviewPage.setVisible(true);
     }
 
     private void openCampaignFormView(Campaign campaignToEdit) {
@@ -243,41 +245,5 @@ public class CampaignsView extends Composite<VerticalLayout> implements AfterNav
                         UI.getCurrent().getPage().reload();
                     }
                 });
-    }
-
-    @Override
-    public void afterNavigation(AfterNavigationEvent event) {
-        String path = event.getLocation().getPath();
-        if (path.startsWith("campaigns/campaign/")) {
-            String[] segments = path.split("/");
-            if (segments.length >= 4) {
-                String campaignId = segments[2];
-                String selectedTab = segments[3];
-
-                Optional<Campaign> campaignOpt = campaignRepository.findById(Long.valueOf(campaignId));
-                if (campaignOpt.isPresent()) {
-                    Campaign selectedCampaign = campaignOpt.get();
-                    campaignSelect.setValue(selectedCampaign);
-                    updateTabs(selectedCampaign);
-
-                    tabs.getChildren().forEach(tab -> {
-                        if (tab instanceof Tab) {
-                            Tab tabComponent = (Tab) tab;
-                            if (tabComponent.getLabel().equalsIgnoreCase(selectedTab)) {
-                                tabs.setSelectedTab(tabComponent);
-                            }
-                        }
-                    });
-
-                    tabsToPages.values().forEach(page -> page.setVisible(false));
-                    Component selectedPage = tabsToPages.get(tabs.getSelectedTab());
-                    if (selectedPage != null) {
-                        selectedPage.setVisible(true);
-                    }
-                } else {
-                    showNoCampaignsView();
-                }
-            }
-        }
     }
 }
