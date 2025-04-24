@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 
 @PageTitle("Users")
 @Route("users")
-@Menu(order = 6, icon = LineAwesomeIconUrl.USER_FRIENDS_SOLID)
+@Menu(order = 5, icon = LineAwesomeIconUrl.USER_FRIENDS_SOLID)
 @RolesAllowed("ADMIN")
 @Uses(Icon.class)
 public class UsersView extends Composite<VerticalLayout> {

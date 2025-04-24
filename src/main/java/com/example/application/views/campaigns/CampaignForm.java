@@ -84,6 +84,8 @@ public class CampaignForm extends FormLayout {
         getStyle().set("padding", "1rem");
         setWidth("400px");
 
+        // TODO: Add Close & Cancel-buttons
+
         this.selectedGms = new ArrayList<>();
         this.selectedPlayers = new ArrayList<>();
         selectedGms.add(loggedInUser);

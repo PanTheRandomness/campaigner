@@ -16,7 +16,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
 @PageTitle("Encyclopedia")
 @Route("encyclopedia")
-@Menu(order = 5, icon = LineAwesomeIconUrl.BOOK_SOLID)
+@Menu(order = 4, icon = LineAwesomeIconUrl.BOOK_SOLID)
 @PermitAll
 public class EncyclopediaView extends Composite<VerticalLayout> {
 

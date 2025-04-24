@@ -1,9 +1,7 @@
 package com.example.application.views.campaigns;
 
+import com.example.application.data.*;
 import com.example.application.data.Calendar;
-import com.example.application.data.Campaign;
-import com.example.application.data.User;
-import com.example.application.data.World;
 import com.example.application.data.repositories.*;
 import com.example.application.security.AuthenticatedUser;
 import com.example.application.services.CampaignService;
@@ -45,6 +43,10 @@ public class CampaignsView extends Composite<VerticalLayout> {
     private final WorldRepository worldRepository;
     private final CalendarRepository calendarRepository;
     private final MoonRepository moonRepository;
+    private final EventRepository eventRepository;
+    private final EventTypeRepository eventTypeRepository;
+    private final EventDurationRepository eventDurationRepository;
+
     private final CampaignService campaignService;
     private final AuthenticatedUser authenticatedUser;
 
@@ -55,12 +57,20 @@ public class CampaignsView extends Composite<VerticalLayout> {
 
     private final SplitLayout splitLayout = new SplitLayout();
 
-    public CampaignsView(CampaignRepository campaignRepository, UserRepository userRepository, WorldRepository worldRepository, CalendarRepository calendarRepository, MoonRepository moonRepository, CampaignService campaignService, AuthenticatedUser authenticatedUser) {
+    public CampaignsView(CampaignRepository campaignRepository, UserRepository userRepository,
+                         WorldRepository worldRepository, CalendarRepository calendarRepository,
+                         MoonRepository moonRepository, EventRepository eventRepository,
+                         EventTypeRepository eventTypeRepository, EventDurationRepository eventDurationRepository,
+                         CampaignService campaignService, AuthenticatedUser authenticatedUser) {
         this.campaignRepository = campaignRepository;
         this.userRepository = userRepository;
         this.worldRepository = worldRepository;
         this.calendarRepository = calendarRepository;
         this.moonRepository = moonRepository;
+        this.eventRepository = eventRepository;
+        this.eventTypeRepository = eventTypeRepository;
+        this.eventDurationRepository = eventDurationRepository;
+
         this.campaignService = campaignService;
         this.authenticatedUser = authenticatedUser;
 
@@ -172,6 +182,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
     }
 
     private void updateTabs(Campaign campaign) {
+        // TODO: Fix Grid Sizes!!
         tabs.removeAll();
         pages.removeAll();
         tabsToPages.clear();
@@ -183,28 +194,129 @@ public class CampaignsView extends Composite<VerticalLayout> {
 
         tabs.add(overviewTab, timelineTab, playersTab, worldTab);
 
-        // TODO: Customize all Tab Content
+        // TODO: Overview
         Div overviewPage = new Div(new Paragraph("Overview content for " + campaign.getCampaignName()));
+        overviewPage.setSizeFull(); // This is important for page size!!
 
-        VerticalLayout timelinesLayout = new VerticalLayout();
-        HorizontalLayout timelineLayout = new HorizontalLayout();
-        HorizontalLayout eventsLayout = new HorizontalLayout();
+        // TODO: Timeline
+        H3 timelineTitle = new H3("Campaign Timeline");
+        Div timelinePlaceholder = new Div(new Paragraph("Timeline will be here, eventually."));
 
-        // TODO: Add content to Events
-        // TODO: Relocate Events view to here
-        timelinesLayout.add(timelineLayout, eventsLayout);
+        // Events
+        H3 eventGridTitle = new H3("Campaign Events");
+        List<Event> campaignEvents = eventRepository.findByCampaignId(campaign.getId());
 
-        Div timelinePage = new Div(new Paragraph("Timeline content for " + campaign.getCampaignName()));
+        Grid<Event> eventGrid = new Grid<>(Event.class, false);
+        eventGrid.setSizeFull();
+        eventGrid.getStyle().set("font-size", "var(--lumo-font-size-l)");
 
-        // Grid for Players & GMs
+        eventGrid.setItems(campaignEvents);
+
+        Button addEventButton = new Button("Add Event");
+
+        // Event Editor
+        H3 editEventTitle = new H3("Event Editor");
+        Button cancelEventEditButton = new Button("Cancel New Event");
+        Button saveEventButton = new Button("Save Event");
+
+        // Layouts
+        VerticalLayout timelineRowLayout = new VerticalLayout();
+        HorizontalLayout eventsRowHeading = new HorizontalLayout();
+        VerticalLayout eventsRowLayout = new VerticalLayout();
+        VerticalLayout newEventRow = new VerticalLayout();
+
+
+        // TODO: Manage event visibility based on event's private-attribute
+        // Add Columns to eventGrid
+        eventGrid.addColumn(Event::getName)
+                .setHeader("Name")
+                .setAutoWidth(true)
+                .setTextAlign(ColumnTextAlign.START);
+
+        eventGrid.addColumn(Event::getDescription)
+                .setHeader("Description")
+                .setAutoWidth(true)
+                .setTextAlign(ColumnTextAlign.START);
+
+        // TODO: Show Event Type Colour
+        eventGrid.addColumn(Event::getType)
+                .setHeader("Type")
+                .setAutoWidth(true)
+                .setTextAlign(ColumnTextAlign.START);
+
+        eventGrid.addColumn(Event::getPlace)
+                .setHeader("Place")
+                .setAutoWidth(true)
+                .setTextAlign(ColumnTextAlign.START);
+
+        eventGrid.addColumn(Event::getReoccurring)
+                .setHeader("Reoccurrence Type")
+                .setAutoWidth(true)
+                .setTextAlign(ColumnTextAlign.START);
+
+        // TODO: Get Start & End Dates from Duration
+        eventGrid.addColumn(Event::getDuration)
+                .setHeader("Starting date")
+                .setAutoWidth(true)
+                .setTextAlign(ColumnTextAlign.START);
+
+        eventGrid.addComponentColumn(selectedEvent -> {
+            Button editButton = new Button("Edit", event -> editEvent(selectedEvent, eventsRowLayout, newEventRow));
+            editButton.getStyle().set("margin-right", "8px");
+
+            Button removeButton = new Button("Remove", event -> removeEvent(selectedEvent));
+            removeButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
+            return new Div(editButton, removeButton);
+        }).setHeader("Actions");
+
+        addEventButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        addEventButton.addClickListener(e -> {
+            eventsRowLayout.setVisible(false);
+            newEventRow.setVisible(true);
+        });
+
+        cancelEventEditButton.addClickListener(e -> {
+            newEventRow.setVisible(false);
+            eventsRowLayout.setVisible(true);
+        });
+
+        saveEventButton.addClickListener(e -> {
+            // TODO: Save new event / save modified event
+            newEventRow.setVisible(false);
+            eventsRowLayout.setVisible(true);
+        });
+
+        // Sizes
+        timelineRowLayout.setSizeFull();
+        eventsRowLayout.setSizeFull();
+
+        timelineRowLayout.add(timelineTitle, timelinePlaceholder);
+        eventsRowHeading.add(eventGridTitle, addEventButton);
+        eventsRowLayout.add(eventsRowHeading, eventGrid);
+        newEventRow.add(editEventTitle, cancelEventEditButton, saveEventButton);
+
+        // Set default visibility for timeline-tab
+        timelineRowLayout.setVisible(true);
+        eventsRowLayout.setVisible(true);
+        newEventRow.setVisible(false);
+
+        VerticalLayout timelineLayout = new VerticalLayout();
+        timelineLayout.setSizeFull();
+        timelineLayout.setPadding(false);
+        timelineLayout.setSpacing(true);
+        timelineLayout.add(timelineRowLayout, eventsRowLayout, newEventRow);
+
+        Div timelinePage = new Div(timelineLayout);
+        timelinePage.setSizeFull(); // This is important for page size!!
+
+        // Players & GMs
         H3 playerGridTitle = new H3(campaign.getCampaignName() + "'s GMs & players");
         Grid<User> playerGrid = new Grid<>(User.class, false);
         List<User> gms = userRepository.findByGmCampaigns(campaign);
         List<User> players = userRepository.findByPlayerCampaigns(campaign);
 
-        // TODO: Fix playerGrid height!
-        playerGrid.setWidth("100%");
-        playerGrid.setHeight("100%");
+        playerGrid.setSizeFull();
         playerGrid.getStyle().set("font-size", "var(--lumo-font-size-l)");
 
         playerGrid.addColumn(User::getUsername)
@@ -246,9 +358,16 @@ public class CampaignsView extends Composite<VerticalLayout> {
         playersLayout.add(playerGridTitle, playerGrid);
 
         Div playersPage = new Div(playersLayout);
-        playersPage.setSizeFull();
+        playersPage.setSizeFull(); // This is important for page size!!
 
-        Div worldPage = new Div(new Paragraph("World content for " + campaign.getCampaignName()));
+        // TODO: World
+        H3 worldTitle = new H3(campaign.getCampaignName() + "'s World");
+        Div worldPlaceholder = new Div(new Paragraph("The world will eventually be here!"));
+        VerticalLayout worldLayout = new VerticalLayout();
+        worldLayout.add(worldTitle, worldPlaceholder);
+
+        Div worldPage = new Div(worldLayout);
+        worldPage.setSizeFull(); // This is important for page size!!
 
         tabsToPages.put(overviewTab, overviewPage);
         tabsToPages.put(timelineTab, timelinePage);
@@ -318,5 +437,15 @@ public class CampaignsView extends Composite<VerticalLayout> {
                         UI.getCurrent().getPage().reload();
                     }
                 });
+    }
+
+    private void editEvent(Event event, VerticalLayout eventsRowLayout, VerticalLayout newEventRow ) {
+        eventsRowLayout.setVisible(false);
+        newEventRow.setVisible(true);
+        // TODO: Populate Event Edit Layout
+    }
+
+    private void removeEvent(Event event) {
+        // TODO: Remove Event
     }
 }
