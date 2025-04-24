@@ -257,7 +257,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         eventTypeChoiceGroup.addValueChangeListener(event -> {
             boolean isCreateNew = "Create New".equals(eventTypeChoiceGroup.getValue());
             eventTypeNameField.setVisible(isCreateNew);
-            eventTypeColorPicker.setVisible(isCreateNew);
+            eventTypeColorPicker.setVisible(isCreateNew); // TODO: This disappears when changing choice?
             eventTypeSelect.setVisible(!isCreateNew);
         });
 
