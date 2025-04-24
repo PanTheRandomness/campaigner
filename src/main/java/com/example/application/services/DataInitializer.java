@@ -118,6 +118,7 @@ public class DataInitializer {
                 calendar.setMonthsInYear(4);
                 calendar.setDaysInMonth(30);
                 calendar.setDaysInWeek(3);
+                calendar.setCurrentDate(new CalendarDate(312,5,1));
 
                 List<String> months = new ArrayList<>();
                 months.add("First Month");
@@ -165,14 +166,17 @@ public class DataInitializer {
 
                 // Create durations
                 EventDuration duration = new EventDuration();
-                duration.setStartDate("01-01-2025");
-                duration.setEndDate("01-02-2025");
-                duration.setDuration(31);
+                CalendarDate startDate = new CalendarDate(290,1,1);
+                CalendarDate endDate = new CalendarDate(290,2,1);
+                duration.setStartDate(startDate);
+                duration.setEndDate(endDate);
+                duration.setDuration(startDate, endDate, calendar);
                 eventDurationRepository.save(duration);
 
                 EventDuration duration2 = new EventDuration();
-                duration2.setStartDate("01-03-0000");
-                duration2.setDuration(1);
+                CalendarDate startDate2 = new CalendarDate(0,3,1);
+                duration2.setStartDate(startDate2);
+                duration2.setDuration(startDate2, null, calendar);
                 eventDurationRepository.save(duration2);
 
                 // Create events

@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface WorldRepository extends JpaRepository<World, Long> {
     List<World> findByCampaigns(Campaign campaign);
+    List<World> findByCampaignsIn(List<Campaign> campaigns);
 }

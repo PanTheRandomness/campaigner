@@ -20,6 +20,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.tabs.Tab;
@@ -52,6 +53,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
     private final EventRepository eventRepository;
     private final EventTypeRepository eventTypeRepository;
     private final EventDurationRepository eventDurationRepository;
+    private final PlaceRepository placeRepository;
 
     private final CampaignService campaignService;
     private final AuthenticatedUser authenticatedUser;
@@ -67,6 +69,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
                          WorldRepository worldRepository, CalendarRepository calendarRepository,
                          MoonRepository moonRepository, EventRepository eventRepository,
                          EventTypeRepository eventTypeRepository, EventDurationRepository eventDurationRepository,
+                         PlaceRepository placeRepository,
                          CampaignService campaignService, AuthenticatedUser authenticatedUser) {
         this.campaignRepository = campaignRepository;
         this.userRepository = userRepository;
@@ -76,6 +79,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         this.eventRepository = eventRepository;
         this.eventTypeRepository = eventTypeRepository;
         this.eventDurationRepository = eventDurationRepository;
+        this.placeRepository = placeRepository;
 
         this.campaignService = campaignService;
         this.authenticatedUser = authenticatedUser;
@@ -193,6 +197,9 @@ public class CampaignsView extends Composite<VerticalLayout> {
         pages.removeAll();
         tabsToPages.clear();
 
+        Optional<User> maybeUser = authenticatedUser.get();
+        User loggedUser = maybeUser.get();
+
         Tab overviewTab = new Tab(VaadinIcon.ARCHIVE.create(), new Span("Overview"));
         Tab timelineTab = new Tab(VaadinIcon.ROAD_BRANCHES.create(), new Span("Timelines"));
         Tab playersTab = new Tab(VaadinIcon.USERS.create(), new Span("Players"));
@@ -225,25 +232,85 @@ public class CampaignsView extends Composite<VerticalLayout> {
         // TODO: Show only to GMs
         H3 editEventTitle = new H3("Event Editor");
 
+        // Event name, description, private
         TextField eventNameField = new TextField("Event Name");
         TextArea eventDescriptionField = new TextArea("Event Description");
         Checkbox privateEvent = new Checkbox("Event is private?");
 
-        // TODO: Add Event Type or select existing
+        // Event Type
+        RadioButtonGroup<String> eventTypeChoiceGroup = new RadioButtonGroup<>("Create new or choose existing Event Type");
+        eventTypeChoiceGroup.setItems("Create new Event Type", "Choose existing Event Type");
+        eventTypeChoiceGroup.setValue("Create new Event Type");
+
+        Select<EventType> eventTypeSelect = new Select<>();
+        List<EventType> userEventTypes = eventTypeRepository.findDistinctEventTypesByCampaigns(campaignRepository.findByGms(loggedUser));
+        eventTypeSelect.setLabel("Select Event Type");
+        eventTypeSelect.setItemLabelGenerator(EventType::getEventType);
+        eventTypeSelect.setItems(userEventTypes);
+        eventTypeSelect.setVisible(false);
+
         TextField eventTypeNameField = new TextField("Event Type Name");
-        ColorPicker eventTypeColorPicker = new ColorPicker(); // TODO: Add listener
+        ColorPicker eventTypeColorPicker = new ColorPicker();
+        eventTypeColorPicker.setLabel("Select Event Type Color");
 
-        // TODO: event duration functionality
+        // Toggle create new/select event type visibility
+        eventTypeChoiceGroup.addValueChangeListener(event -> {
+            boolean isCreateNew = "Create New".equals(eventTypeChoiceGroup.getValue());
+            eventTypeNameField.setVisible(isCreateNew);
+            eventTypeColorPicker.setVisible(isCreateNew);
+            eventTypeSelect.setVisible(!isCreateNew);
+        });
+
+        eventTypeSelect.addValueChangeListener(event -> {
+            EventType selectedEventType = eventTypeSelect.getValue();
+            boolean eventTypeSelected = selectedEventType != null;
+        });
+
+        eventTypeColorPicker.addValueChangeListener(event -> {
+            String eventTypeColor = event.getValue().toString();
+        });
+
         DatePicker eventStartDateField = new DatePicker("Event Start Date");
-        DatePicker eventEndDateField = new DatePicker("Event End Date");
-        EventDuration eventDuration = new EventDuration();
+        DatePicker eventEndDateField = new DatePicker("Event End Date. Leave blank if still ongoing.");
 
-        // TODO: Add Place or select existing
+        // Event Place
         TextField newEventPlace = new TextField("New Event Place");
-        Select<Place> eventPlaceSelect = new Select<>(); // TODO: Add Listener
+        Select<Place> eventPlaceSelect = new Select<>();
+        List<Place> userPlaces = placeRepository.findPlacesByWorlds(worldRepository.findByCampaignsIn(campaignRepository.findByGms(loggedUser)));
+        eventPlaceSelect.setLabel("Select Event Place");
+        eventPlaceSelect.setItemLabelGenerator(Place::getPlaceName);
+        eventPlaceSelect.setItems(userPlaces);
+        eventPlaceSelect.setVisible(false);
 
-        Select<ReoccurrenceType> reoccurrenceTypeSelect = new Select<>(); // TODO: Add Listener & Data
+        RadioButtonGroup<String> placeChoiceGroup = new RadioButtonGroup<>("Create new or choose existing Place");
+        placeChoiceGroup.setItems("Create new Place", "Choose existing Place");
+        placeChoiceGroup.setValue("Create new Place");
 
+        // Toggle create new/select place visibility
+        placeChoiceGroup.addValueChangeListener(event -> {
+            boolean isCreateNew = "Create New".equals(placeChoiceGroup.getValue());
+            newEventPlace.setVisible(isCreateNew);
+            eventPlaceSelect.setVisible(!isCreateNew);
+        });
+
+        // Selected Event Type
+        eventPlaceSelect.addValueChangeListener(event -> {
+            Place selectedPlace = eventPlaceSelect.getValue();
+            boolean eventPlaceSelected = selectedPlace != null;
+        });
+
+        // Reoccurrence type
+        Select<ReoccurrenceType> reoccurrenceTypeSelect = new Select<>();
+        List<ReoccurrenceType> reoccurrenceTypes = Arrays.asList(ReoccurrenceType.values());
+        reoccurrenceTypeSelect.setItems(reoccurrenceTypes);
+        reoccurrenceTypeSelect.setLabel("Select Reoccurrence Type");
+
+        reoccurrenceTypeSelect.addValueChangeListener(event -> {
+           ReoccurrenceType selectedReoccurrenceType = reoccurrenceTypeSelect.getValue();
+           boolean reoccurrenceTypeSelected = selectedReoccurrenceType != null;
+        });
+
+        // Editor Buttons
         Button cancelEventEditButton = new Button("Cancel New Event");
         Button saveEventButton = new Button("Save Event");
         saveEventButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -303,15 +370,20 @@ public class CampaignsView extends Composite<VerticalLayout> {
         addEventButton.addClickListener(e -> {
             eventsLayout.setVisible(false);
             newEventLayout.setVisible(true);
+            // TODO: Populate edit form if editing
         });
 
         cancelEventEditButton.addClickListener(e -> {
             newEventLayout.setVisible(false);
             eventsLayout.setVisible(true);
+            // TODO: Clear edit form
         });
 
         saveEventButton.addClickListener(e -> {
             // TODO: Save new event / save modified event
+            // TODO: event duration functionality
+            EventDuration eventDuration = new EventDuration();
+
             newEventLayout.setVisible(false);
             eventsLayout.setVisible(true);
         });
@@ -325,8 +397,11 @@ public class CampaignsView extends Composite<VerticalLayout> {
                 editEventTitle,
                 eventNameField, eventDescriptionField,
                 privateEvent,
+                eventTypeChoiceGroup,
                 eventTypeNameField, eventTypeColorPicker,
+                eventTypeSelect,
                 eventStartDateField, eventEndDateField,
+                placeChoiceGroup,
                 newEventPlace, eventPlaceSelect,
                 reoccurrenceTypeSelect,
                 newEventButtonLayout

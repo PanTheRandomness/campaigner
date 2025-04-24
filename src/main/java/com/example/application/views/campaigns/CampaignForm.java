@@ -369,7 +369,7 @@ public class CampaignForm extends FormLayout {
             selectedCalendar.setDaysInWeek(Integer.parseInt(daysInWeekField.getValue()));
             selectedCalendar.setMonthNames(List.of(monthNamesField.getValue().split(",")));
             selectedCalendar.setWeekdayNames(List.of(weekdayNamesField.getValue().split(",")));
-
+            calendarRepository.save(selectedCalendar);
             // Create moons
             List<Moon> moons = new ArrayList<>();
             int moonCount = Integer.parseInt(moonCountField.getValue());

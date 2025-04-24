@@ -1,12 +1,16 @@
 package com.example.application.data;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
 @Embeddable
 public class CalendarDate {
 
+    @Column(insertable = false, updatable = false)
     private int year;
+    @Column(insertable = false, updatable = false)
     private int month;
+    @Column(insertable = false, updatable = false)
     private int day;
 
     public CalendarDate() {
