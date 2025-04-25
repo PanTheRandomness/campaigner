@@ -12,7 +12,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.*;
@@ -36,6 +35,7 @@ import java.util.*;
 import java.util.List;
 
 import org.vaadin.addons.tatu.ColorPicker;
+import org.vaadin.addons.tatu.ColorPickerVariant;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
 @PageTitle("Campaigns")
@@ -45,6 +45,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 public class CampaignsView extends Composite<VerticalLayout> {
 
     // TODO: Remove unused code
+    // TODO: Add control for Current Date
     private final CampaignRepository campaignRepository;
     private final UserRepository userRepository;
     private final WorldRepository worldRepository;
@@ -52,7 +53,6 @@ public class CampaignsView extends Composite<VerticalLayout> {
     private final MoonRepository moonRepository;
     private final EventRepository eventRepository;
     private final EventTypeRepository eventTypeRepository;
-    private final EventDurationRepository eventDurationRepository;
     private final PlaceRepository placeRepository;
     private final AreaRepository areaRepository;
 
@@ -69,7 +69,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
     public CampaignsView(CampaignRepository campaignRepository, UserRepository userRepository,
                          WorldRepository worldRepository, CalendarRepository calendarRepository,
                          MoonRepository moonRepository, EventRepository eventRepository,
-                         EventTypeRepository eventTypeRepository, EventDurationRepository eventDurationRepository,
+                         EventTypeRepository eventTypeRepository,
                          PlaceRepository placeRepository, AreaRepository areaRepository,
                          CampaignService campaignService, AuthenticatedUser authenticatedUser) {
         this.campaignRepository = campaignRepository;
@@ -79,7 +79,6 @@ public class CampaignsView extends Composite<VerticalLayout> {
         this.moonRepository = moonRepository;
         this.eventRepository = eventRepository;
         this.eventTypeRepository = eventTypeRepository;
-        this.eventDurationRepository = eventDurationRepository;
         this.placeRepository = placeRepository;
         this.areaRepository = areaRepository;
 
@@ -213,6 +212,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         tabs.add(overviewTab, timelineTab, playersTab, worldTab);
 
         // TODO: Overview
+        // TODO: Add all campaigns to grid + add filters!
         Div overviewPage = new Div(new Paragraph("Overview content for " + campaign.getCampaignName()));
         overviewPage.setSizeFull(); // This is important for page size!!
 
@@ -225,6 +225,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         H3 eventGridTitle = new H3("Campaign Events");
         List<Event> campaignEvents = eventRepository.findByCampaignId(campaign.getId());
 
+        // TODO: Add Event Grid Filters!
         Grid<Event> eventGrid = new Grid<>(Event.class, false);
         eventGrid.setSizeFull();
         eventGrid.getStyle().set("font-size", "var(--lumo-font-size-l)");
@@ -249,15 +250,17 @@ public class CampaignsView extends Composite<VerticalLayout> {
         eventTypeChoiceGroup.setValue("Create new Event Type");
 
         Select<EventType> eventTypeSelect = new Select<>();
-        List<EventType> userEventTypes = eventTypeRepository.findDistinctEventTypesByCampaigns(campaignRepository.findByGms(loggedUser));
+        // TODO: Fix Bug: Not seeing event types?
+        List<EventType> userEventTypes = eventTypeRepository.findEventTypesByCampaigns(campaignRepository.findByGms(loggedUser));
         eventTypeSelect.setLabel("Select Event Type");
-        eventTypeSelect.setItemLabelGenerator(EventType::getEventType);
+        eventTypeSelect.setItemLabelGenerator(EventType::getEventTypeName);
         eventTypeSelect.setItems(userEventTypes);
         eventTypeSelect.setVisible(false);
 
         TextField eventTypeNameField = new TextField("Event Type Name");
         ColorPicker eventTypeColorPicker = new ColorPicker();
         eventTypeColorPicker.setLabel("Select Event Type Color");
+        eventTypeColorPicker.addThemeVariants(ColorPickerVariant.COMPACT);
 
         // Toggle create new/select event type visibility
         eventTypeChoiceGroup.addValueChangeListener(event -> {
@@ -267,10 +270,15 @@ public class CampaignsView extends Composite<VerticalLayout> {
             eventTypeSelect.setVisible(!isCreateNew);
         });
 
+        eventTypeColorPicker.addValueChangeListener(event -> {
+            System.out.println(eventTypeColorPicker.getValue());
+        });
+
         TextField eventStartDay = new TextField("Event Start Day");
         TextField eventStartMonth = new TextField("Event Start Month");
         TextField eventStartYear = new TextField("Event Start Year");
 
+        // TODO: Fix Bug: have to input an end date if something has been accidentally added in end date fields and removed
         TextField eventEndDay = new TextField("Event End Day");
         TextField eventEndMonth = new TextField("Event End Month");
         TextField eventEndYear = new TextField("Event End Year");
@@ -331,7 +339,9 @@ public class CampaignsView extends Composite<VerticalLayout> {
             newEventPlaceAreaDescription.setVisible(isCreateNew);
             newEventPlaceAreaHistory.setVisible(isCreateNew);
             newEventPlaceAreaPrivate.setVisible(isCreateNew);
-            newEventPlaceAreaSelect.setVisible(isCreateNew);
+            if (eventPlaceChoiceGroup.getValue().equals("Create new Place")) { // TODO: Does this hide select
+                newEventPlaceAreaSelect.setVisible(isCreateNew);
+            }
         });
 
         // Toggle create new/select area visibility
@@ -378,12 +388,15 @@ public class CampaignsView extends Composite<VerticalLayout> {
                 .setTextAlign(ColumnTextAlign.START);
 
         // TODO: Show Event Type Colour
-        eventGrid.addColumn(Event::getType)
+        eventGrid.addColumn(event -> event.getType().getEventTypeName())
                 .setHeader("Type")
                 .setAutoWidth(true)
                 .setTextAlign(ColumnTextAlign.START);
 
-        eventGrid.addColumn(Event::getPlace)
+        eventGrid.addColumn(event -> {
+                    Place place = event.getPlace();
+                    return (place != null) ? place.getPlaceName() : "-";
+                })
                 .setHeader("Place")
                 .setAutoWidth(true)
                 .setTextAlign(ColumnTextAlign.START);
@@ -393,9 +406,16 @@ public class CampaignsView extends Composite<VerticalLayout> {
                 .setAutoWidth(true)
                 .setTextAlign(ColumnTextAlign.START);
 
-        // TODO: Get Start & End Dates from Duration
-        eventGrid.addColumn(Event::getDuration)
+        eventGrid.addColumn(event -> event.getDuration().getStartDate().toString())
                 .setHeader("Starting date")
+                .setAutoWidth(true)
+                .setTextAlign(ColumnTextAlign.START);
+
+        eventGrid.addColumn(event -> {
+                    CalendarDate endDate = event.getDuration().getEndDate();
+                    return (endDate != null) ? endDate.toString() : "-";
+                })
+                .setHeader("Ending date")
                 .setAutoWidth(true)
                 .setTextAlign(ColumnTextAlign.START);
 
@@ -444,8 +464,20 @@ public class CampaignsView extends Composite<VerticalLayout> {
                 eventTypeSelect.setInvalid(true);
                 eventTypeSelect.setErrorMessage("Please select an event type.");
                 eventIsValid = false;
-            } else {
+            } else if ("Choose existing Event Type".equals(eventTypeChoiceGroup.getValue()) && eventTypeColorPicker.getValue() == null) {
+                eventTypeColorPicker.setInvalid(true);
+                eventTypeColorPicker.setErrorMessage("Please select a colour for new event type."); // TODO: Fix error message not showing
+                eventIsValid = false;
+            }else if ("Create new Event Type".equals(eventTypeChoiceGroup.getValue()) && eventTypeRepository
+                    .findEventTypesByCampaign(campaign)
+                    .stream()
+                    .anyMatch(eventType -> eventType.getEventTypeName().equalsIgnoreCase(eventTypeNameField.getValue().trim()))) {
+                eventTypeNameField.setInvalid(true);
+                eventTypeNameField.setErrorMessage("This Event Type already exists in this campaign.");
+                eventIsValid = false;
+            }else {
                 eventTypeNameField.setInvalid(false);
+                eventTypeColorPicker.setInvalid(false);
                 eventTypeSelect.setInvalid(false);
             }
 
@@ -569,15 +601,15 @@ public class CampaignsView extends Composite<VerticalLayout> {
             }
 
             // Validate Event Place Area (if new Place) (name/existing)
-            if ("Create new Area".equals(eventPlaceAreaChoiceGroup.getValue()) && newEventPlaceAreaName.getValue().trim().isEmpty()) {
+            if ("Create new Place".equals(eventPlaceChoiceGroup.getValue()) && "Create new Area".equals(eventPlaceAreaChoiceGroup.getValue()) && newEventPlaceAreaName.getValue().trim().isEmpty()) {
                 newEventPlaceAreaName.setInvalid(true);
                 newEventPlaceAreaName.setErrorMessage("Please enter a name for area.");
                 eventIsValid = false;
-            } else if ("Choose existing Area".equals(eventPlaceAreaChoiceGroup.getValue()) && newEventPlaceAreaSelect.getValue() == null) {
+            } else if ("Create new Place".equals(eventPlaceChoiceGroup.getValue()) && "Choose existing Area".equals(eventPlaceAreaChoiceGroup.getValue()) && newEventPlaceAreaSelect.getValue() == null) {
                 newEventPlaceAreaSelect.setInvalid(true);
                 newEventPlaceAreaSelect.setErrorMessage("Please select a place.");
                 eventIsValid = false;
-            } else if ("Create new Area".equals(eventPlaceAreaChoiceGroup.getValue()) && areaRepository
+            } else if ("Create new Place".equals(eventPlaceChoiceGroup.getValue()) && "Create new Area".equals(eventPlaceAreaChoiceGroup.getValue()) && areaRepository
                     .findByWorld(campaign.getCampaignWorld())
                     .stream()
                     .anyMatch(area -> area.getAreaName().equalsIgnoreCase(newEventPlaceAreaName.getValue().trim()))) {
@@ -609,7 +641,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
                 EventType selectedType;
                 if ("Create new Event Type".equals(eventTypeChoiceGroup.getValue())) {
                     selectedType = new EventType();
-                    selectedType.setEventType(eventTypeNameField.getValue().trim());
+                    selectedType.setEventTypeName(eventTypeNameField.getValue().trim());
                     selectedType.setEventColour(eventTypeColorPicker.getValue().trim());
                     eventTypeRepository.save(selectedType);
                 } else {
@@ -618,17 +650,16 @@ public class CampaignsView extends Composite<VerticalLayout> {
                 selectedEvent.setType(selectedType);
 
                 // Handle Event Duration Save
-                // TODO: Test Duration Save
                 EventDuration eventDuration = new EventDuration();
                 eventDuration.setStartDate(new CalendarDate(Integer.parseInt(eventStartYear.getValue()),Integer.parseInt(eventStartMonth.getValue()),Integer.parseInt(eventStartDay.getValue())));
-                if (eventEndDay.getValue() != null && eventEndMonth.getValue() != null && eventEndYear.getValue() != null) {
+                if (!eventEndDay.getValue().trim().isEmpty() && !eventEndMonth.getValue().trim().isEmpty() && !eventEndYear.getValue().trim().isEmpty()) {
                     eventDuration.setEndDate(new CalendarDate(Integer.parseInt(eventEndYear.getValue()), Integer.parseInt(eventEndMonth.getValue()),Integer.parseInt(eventEndDay.getValue())));
                 }
-                eventDuration.setDuration(campaign.getCalendar());
+                eventDuration.setDuration(eventDuration.calculateDuration(eventDuration.getStartDate(), eventDuration.getEndDate(), campaign.getCalendar()));
                 selectedEvent.setDuration(eventDuration);
 
                 // Handle Event Area Save if new area (link to world)
-                // TODO: Test Area Save
+                // TODO: Fix Bug: selectedArea == null
                 Area selectedArea = null;
                 if("Create new Event".equals(eventTypeChoiceGroup.getValue()) &&
                         "Create new Place".equals(eventPlaceChoiceGroup.getValue()) &&
@@ -647,7 +678,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
                 }
 
                 // Handle Event Place Save if new place (link to area)
-                // TODO: Test Place Save
+                // TODO: Fix Bug: selectedPlace == null
                 Place selectedPlace;
                 if ("Create new Event".equals(eventTypeChoiceGroup.getValue()) &&
                         "Create new Place".equals(eventPlaceChoiceGroup.getValue()) ){
@@ -662,6 +693,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
                 } else {
                     selectedPlace = newEventPlaceSelect.getValue();
                 }
+                System.out.println(selectedPlace);
                 selectedEvent.setPlace(selectedPlace);
 
                 selectedEvent.setReoccurring(eventReoccurrenceTypeSelect.getValue());

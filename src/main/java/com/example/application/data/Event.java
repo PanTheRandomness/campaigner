@@ -24,7 +24,7 @@ public class Event extends AbstractEntity {
     private EventType type;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "event_duration_id", referencedColumnName = "id")
+    @JoinColumn(name = "event_duration_id")
     private EventDuration duration;
 
     @ManyToOne

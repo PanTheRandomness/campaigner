@@ -1,23 +1,33 @@
 package com.example.application.data;
 
 import jakarta.annotation.Nullable;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
 public class EventDuration extends AbstractEntity {
 
     @NotNull
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "year", column = @Column(name = "start_year")),
+            @AttributeOverride(name = "month", column = @Column(name = "start_month")),
+            @AttributeOverride(name = "day", column = @Column(name = "start_day"))
+    })
     private CalendarDate startDate;
 
     @Nullable
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "year", column = @Column(name = "end_year")),
+            @AttributeOverride(name = "month", column = @Column(name = "end_month")),
+            @AttributeOverride(name = "day", column = @Column(name = "end_day"))
+    })
     private CalendarDate endDate;
 
     private int duration;
 
-    @OneToOne(mappedBy = "duration")
+    @OneToOne(mappedBy = "duration", cascade = CascadeType.ALL)
     private Event event;
 
     //Getters & Setters
@@ -42,16 +52,8 @@ public class EventDuration extends AbstractEntity {
         return duration;
     }
 
-    public void setDuration(Calendar calendar) {
-        int calculatedDuration;
-
-        if (this.endDate == null) {
-            calculatedDuration = calculateDuration(this.startDate, calendar.getCurrentDate(), calendar);
-        } else {
-            calculatedDuration = calculateDuration(this.startDate, this.endDate, calendar);
-        }
-
-        this.duration = calculatedDuration;
+    public void setDuration(int duration) {
+        this.duration = duration;
     }
 
     public Event getEvent() {
@@ -63,17 +65,17 @@ public class EventDuration extends AbstractEntity {
     }
 
     // Methods
-
-    public int calculateDuration(CalendarDate start, CalendarDate end, Calendar calendar) {
+    public int calculateDuration(CalendarDate start, @Nullable CalendarDate end, Calendar calendar) {
+        CalendarDate effectiveEnd = (end != null) ? end : calendar.getCurrentDate();
         int daysBetween = 0;
 
         int startYear = start.getYear();
         int startMonth = start.getMonth();
         int startDay = start.getDay();
 
-        int endYear = end.getYear();
-        int endMonth = end.getMonth();
-        int endDay = end.getDay();
+        int endYear = effectiveEnd.getYear();
+        int endMonth = effectiveEnd.getMonth();
+        int endDay = effectiveEnd.getDay();
 
         while (startYear < endYear || (startYear == endYear && startMonth < endMonth) ||
                 (startYear == endYear && startMonth == endMonth && startDay < endDay)) {

@@ -118,7 +118,10 @@ public class DataInitializer {
                 calendar.setMonthsInYear(4);
                 calendar.setDaysInMonth(30);
                 calendar.setDaysInWeek(3);
-                calendar.setCurrentDate(new CalendarDate(312,5,1));
+                CalendarDate calendarDate = new CalendarDate(312,5,1);
+                System.out.println("Calendar date before saving: " + calendar.getCurrentDate());
+                calendar.setCurrentDate(calendarDate);
+                System.out.println("Calendar date after saving: " + calendar.getCurrentDate());
 
                 List<String> months = new ArrayList<>();
                 months.add("First Month");
@@ -142,6 +145,7 @@ public class DataInitializer {
                 moons.add(moon);
                 calendar.setMoons(moons);
                 calendarRepository.save(calendar);
+                System.out.println("Current Calendar Date after creation");
 
                 // Create campaign
                 Campaign campaign = new Campaign();
@@ -155,12 +159,12 @@ public class DataInitializer {
 
                 // Create event types
                 EventType eventType = new EventType();
-                eventType.setEventType("Adventure");
+                eventType.setEventTypeName("Adventure");
                 eventType.setEventColour("#FF0000");
                 eventTypeRepository.save(eventType);
 
                 EventType eventType2 = new EventType();
-                eventType2.setEventType("Festivals");
+                eventType2.setEventTypeName("Festivals");
                 eventType2.setEventColour("#FF00DDDD");
                 eventTypeRepository.save(eventType2);
 
@@ -170,25 +174,25 @@ public class DataInitializer {
                 CalendarDate endDate = new CalendarDate(290,2,1);
                 duration.setStartDate(startDate);
                 duration.setEndDate(endDate);
-                duration.setDuration(calendar);
-                eventDurationRepository.save(duration);
+                duration.setDuration(duration.calculateDuration(startDate, endDate, calendar));
+                //eventDurationRepository.save(duration);
 
                 EventDuration duration2 = new EventDuration();
                 CalendarDate startDate2 = new CalendarDate(0,3,1);
                 duration2.setStartDate(startDate2);
-                duration2.setDuration(calendar);
-                eventDurationRepository.save(duration2);
+                duration2.setDuration(duration.calculateDuration(startDate2, null, calendar));
+                //eventDurationRepository.save(duration2);
 
                 // Create events
-                Event event = new Event();
-                event.setName("Metsän kutsu");
-                event.setDescription("Salaperäinen ääni houkuttelee sankarit metsään.");
-                event.setCampaign(campaign);
-                event.setType(eventType);
-                event.setPlace(place);
-                event.setDuration(duration);
-                event.setReoccurring(ReoccurrenceType.NONE); //Muutettu Set.of()
-                eventRepository.save(event);
+                Event createEvent = new Event();
+                createEvent.setName("Metsän kutsu");
+                createEvent.setDescription("Salaperäinen ääni houkuttelee sankarit metsään.");
+                createEvent.setCampaign(campaign);
+                createEvent.setType(eventType);
+                createEvent.setPlace(place);
+                createEvent.setDuration(duration);
+                createEvent.setReoccurring(ReoccurrenceType.NONE);
+                eventRepository.save(createEvent);
 
                 Event event2 = new Event();
                 event2.setName("Kevätmarkkinat");
@@ -197,7 +201,7 @@ public class DataInitializer {
                 event2.setType(eventType2);
                 event2.setPlace(place2);
                 event2.setDuration(duration2);
-                event2.setReoccurring(ReoccurrenceType.YEARLY); //Muutettu Set.of()
+                event2.setReoccurring(ReoccurrenceType.YEARLY);
                 eventRepository.save(event2);
             }
         } catch (Exception e) {

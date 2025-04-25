@@ -10,7 +10,7 @@ import java.util.List;
 public class EventType extends AbstractEntity {
 
     @NotNull
-    private String eventType;
+    private String eventTypeName;
 
     @NotNull
     private String eventColour;
@@ -20,12 +20,12 @@ public class EventType extends AbstractEntity {
 
     //Getters & Setters
 
-    public String getEventType() {
-        return eventType;
+    public String getEventTypeName() {
+        return eventTypeName;
     }
 
-    public void setEventType(String eventType) {
-        this.eventType = eventType;
+    public void setEventTypeName(String eventType) {
+        this.eventTypeName = eventType;
     }
 
     public String getEventColour() {
