@@ -170,13 +170,13 @@ public class DataInitializer {
                 CalendarDate endDate = new CalendarDate(290,2,1);
                 duration.setStartDate(startDate);
                 duration.setEndDate(endDate);
-                duration.setDuration(startDate, endDate, calendar);
+                duration.setDuration(calendar);
                 eventDurationRepository.save(duration);
 
                 EventDuration duration2 = new EventDuration();
                 CalendarDate startDate2 = new CalendarDate(0,3,1);
                 duration2.setStartDate(startDate2);
-                duration2.setDuration(startDate2, null, calendar);
+                duration2.setDuration(calendar);
                 eventDurationRepository.save(duration2);
 
                 // Create events
@@ -187,7 +187,7 @@ public class DataInitializer {
                 event.setType(eventType);
                 event.setPlace(place);
                 event.setDuration(duration);
-                event.setReoccurring(Set.of(ReoccurrenceType.NONE));
+                event.setReoccurring(ReoccurrenceType.NONE); //Muutettu Set.of()
                 eventRepository.save(event);
 
                 Event event2 = new Event();
@@ -197,7 +197,7 @@ public class DataInitializer {
                 event2.setType(eventType2);
                 event2.setPlace(place2);
                 event2.setDuration(duration2);
-                event2.setReoccurring(Set.of(ReoccurrenceType.YEARLY));
+                event2.setReoccurring(ReoccurrenceType.YEARLY); //Muutettu Set.of()
                 eventRepository.save(event2);
             }
         } catch (Exception e) {

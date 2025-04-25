@@ -195,6 +195,8 @@ public class CampaignsView extends Composite<VerticalLayout> {
 
     // Here are the contents of the Overview, Timeline, Players & World Tabs
     private void updateTabs(Campaign campaign) {
+        // TODO: Separate Tabs to own files?
+        // TODO: Add Form to edit Event Types
         // TODO: Fix Grid Sizes!!
         tabs.removeAll();
         pages.removeAll();
@@ -239,7 +241,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         // Event name, description, private
         TextField eventNameField = new TextField("Event Name");
         TextArea eventDescriptionField = new TextArea("Event Description");
-        Checkbox privateEvent = new Checkbox("Event is private?");
+        Checkbox privateEventCheckbox = new Checkbox("Event is private?");
 
         // Event Type
         RadioButtonGroup<String> eventTypeChoiceGroup = new RadioButtonGroup<>("Create new or choose existing Event Type");
@@ -265,16 +267,6 @@ public class CampaignsView extends Composite<VerticalLayout> {
             eventTypeSelect.setVisible(!isCreateNew);
         });
 
-        eventTypeSelect.addValueChangeListener(event -> {
-            EventType selectedEventType = eventTypeSelect.getValue();
-            // boolean eventTypeSelected = selectedEventType != null;
-        });
-
-        eventTypeColorPicker.addValueChangeListener(event -> {
-            String eventTypeColor = event.getValue();
-        });
-
-        // TODO: Set width
         TextField eventStartDay = new TextField("Event Start Day");
         TextField eventStartMonth = new TextField("Event Start Month");
         TextField eventStartYear = new TextField("Event Start Year");
@@ -332,12 +324,14 @@ public class CampaignsView extends Composite<VerticalLayout> {
             newEventPlaceHistory.setVisible(isCreateNew);
             newEventPlacePrivate.setVisible(isCreateNew);
             newEventPlaceSelect.setVisible(!isCreateNew);
-        });
 
-        // Selected Event Place
-        newEventPlaceSelect.addValueChangeListener(event -> {
-            Place selectedPlace = newEventPlaceSelect.getValue();
-            // boolean eventPlaceSelected = selectedPlace != null;
+            // Hide Area Creation if selecting existing place
+            eventPlaceAreaChoiceGroup.setVisible(isCreateNew);
+            newEventPlaceAreaName.setVisible(isCreateNew);
+            newEventPlaceAreaDescription.setVisible(isCreateNew);
+            newEventPlaceAreaHistory.setVisible(isCreateNew);
+            newEventPlaceAreaPrivate.setVisible(isCreateNew);
+            newEventPlaceAreaSelect.setVisible(isCreateNew);
         });
 
         // Toggle create new/select area visibility
@@ -350,22 +344,12 @@ public class CampaignsView extends Composite<VerticalLayout> {
             newEventPlaceAreaSelect.setVisible(!isCreateNew);
         });
 
-        // Selected Event Place Area
-        newEventPlaceAreaSelect.addValueChangeListener(event -> {
-            Area selectedArea = newEventPlaceAreaSelect.getValue();
-            // boolean eventPlaceAreaSelected = selectedArea != null;
-        });
-
         // Reoccurrence type
         Select<ReoccurrenceType> eventReoccurrenceTypeSelect = new Select<>();
         List<ReoccurrenceType> reoccurrenceTypes = Arrays.asList(ReoccurrenceType.values());
         eventReoccurrenceTypeSelect.setItems(reoccurrenceTypes);
         eventReoccurrenceTypeSelect.setLabel("Select Reoccurrence Type");
-
-        eventReoccurrenceTypeSelect.addValueChangeListener(event -> {
-           ReoccurrenceType selectedReoccurrenceType = eventReoccurrenceTypeSelect.getValue();
-           // boolean reoccurrenceTypeSelected = selectedReoccurrenceType != null;
-        });
+        // TODO: Add more to custom reoccurrence
 
         // Editor Buttons
         Button cancelEventEditButton = new Button("Cancel New Event");
@@ -377,6 +361,8 @@ public class CampaignsView extends Composite<VerticalLayout> {
         HorizontalLayout eventsHeadingLayout = new HorizontalLayout();
         VerticalLayout eventsLayout = new VerticalLayout();
         VerticalLayout newEventLayout = new VerticalLayout();
+        HorizontalLayout startDateLayout = new HorizontalLayout();
+        HorizontalLayout endDateLayout = new HorizontalLayout();
         HorizontalLayout newEventButtonLayout = new HorizontalLayout();
 
         // TODO: Manage event visibility based on event's private-attribute
@@ -613,32 +599,85 @@ public class CampaignsView extends Composite<VerticalLayout> {
             }
 
             if (eventIsValid) {
-                // TODO: Handle Event Type Save if new event type
-                // TODO: Handle Event Duration Save
+                Event selectedEvent = new Event();
+                selectedEvent.setName(newEventPlaceName.getValue().trim());
+                selectedEvent.setDescription(newEventPlaceDescription.getValue().trim());
+                selectedEvent.setCampaign(campaign);
+                selectedEvent.setPrivateEvent(privateEventCheckbox.getValue());
 
+                // Handle EventType save
+                EventType selectedType;
+                if ("Create new Event Type".equals(eventTypeChoiceGroup.getValue())) {
+                    selectedType = new EventType();
+                    selectedType.setEventType(eventTypeNameField.getValue().trim());
+                    selectedType.setEventColour(eventTypeColorPicker.getValue().trim());
+                    eventTypeRepository.save(selectedType);
+                } else {
+                    selectedType = eventTypeSelect.getValue();
+                }
+                selectedEvent.setType(selectedType);
+
+                // Handle Event Duration Save
+                // TODO: Test Duration Save
                 EventDuration eventDuration = new EventDuration();
-                // TODO: Handle Event Area Save if new area (link to world)
-                // TODO Handle Event Place Save if new place (link to area)
-                // TODO: Create event and Handle save
+                eventDuration.setStartDate(new CalendarDate(Integer.parseInt(eventStartYear.getValue()),Integer.parseInt(eventStartMonth.getValue()),Integer.parseInt(eventStartDay.getValue())));
+                if (eventEndDay.getValue() != null && eventEndMonth.getValue() != null && eventEndYear.getValue() != null) {
+                    eventDuration.setEndDate(new CalendarDate(Integer.parseInt(eventEndYear.getValue()), Integer.parseInt(eventEndMonth.getValue()),Integer.parseInt(eventEndDay.getValue())));
+                }
+                eventDuration.setDuration(campaign.getCalendar());
+                selectedEvent.setDuration(eventDuration);
+
+                // Handle Event Area Save if new area (link to world)
+                // TODO: Test Area Save
+                Area selectedArea = null;
+                if("Create new Event".equals(eventTypeChoiceGroup.getValue()) &&
+                        "Create new Place".equals(eventPlaceChoiceGroup.getValue()) &&
+                        "Create new Area".equals(eventPlaceAreaChoiceGroup.getValue())) {
+                    selectedArea = new Area();
+                    selectedArea.setWorld(campaign.getCampaignWorld());
+                    selectedArea.setAreaName(newEventPlaceAreaName.getValue().trim());
+                    selectedArea.setAreaDescription(newEventPlaceAreaDescription.getValue().trim());
+                    selectedArea.setAreaHistory(newEventPlaceAreaHistory.getValue().trim());
+                    selectedArea.setPrivateArea(newEventPlaceAreaPrivate.getValue());
+                    areaRepository.save(selectedArea);
+                } else if ("Create new Event".equals(eventTypeChoiceGroup.getValue()) &&
+                        "Create new Place".equals(eventPlaceChoiceGroup.getValue()) &&
+                        "Choose existing Area".equals(eventPlaceAreaChoiceGroup.getValue())) {
+                    selectedArea = newEventPlaceAreaSelect.getValue();
+                }
+
+                // Handle Event Place Save if new place (link to area)
+                // TODO: Test Place Save
+                Place selectedPlace;
+                if ("Create new Event".equals(eventTypeChoiceGroup.getValue()) &&
+                        "Create new Place".equals(eventPlaceChoiceGroup.getValue()) ){
+                    selectedPlace = new Place();
+                    selectedPlace.setPlaceName(newEventPlaceName.getValue().trim());
+                    selectedPlace.setPlaceDescription(newEventPlaceDescription.getValue().trim());
+                    assert selectedArea != null;
+                    selectedPlace.setArea(selectedArea);
+                    selectedPlace.setPlaceHistory(newEventPlaceHistory.getValue().trim());
+                    selectedPlace.setPrivatePlace(newEventPlacePrivate.getValue());
+                    placeRepository.save(selectedPlace);
+                } else {
+                    selectedPlace = newEventPlaceSelect.getValue();
+                }
+                selectedEvent.setPlace(selectedPlace);
+
+                selectedEvent.setReoccurring(eventReoccurrenceTypeSelect.getValue());
+
+                try {
+                    eventRepository.save(selectedEvent);
+                    System.out.println("Event saved successfully.");
+                } catch (Exception ex) {
+                    System.out.println("Error saving event: " + ex.getMessage());
+                }
                 // TODO: Modified event save handling
-//                Event editedEvent = new Event(); // TODO: Fix Write-Only
-//                editedEvent.setName(newEventPlaceName.getValue().trim());
-//                editedEvent.setDescription(newEventPlaceDescription.getValue().trim());
 
                 // Finally change back to eventGrid view
                 newEventLayout.setVisible(false);
                 eventsLayout.setVisible(true);
             }
-
-            /* Things to save
-            * - Description
-            * - Private
-            * - Event Type: new (type*, colour* => create) or existing*
-            * - Event Duration: Start date* & End date, calculate duration*
-            * - Event Place: new (name*, description, area!, history, private) or existing*
-            * - Event Place Area: new (name*, description, history, world (current campaign world), private) or existing*
-            * - Reoccurrence Type*
-            * */
         });
 
         // Add Components to Layouts
@@ -647,15 +686,16 @@ public class CampaignsView extends Composite<VerticalLayout> {
         eventsLayout.add(eventsHeadingLayout, eventGrid);
         newEventButtonLayout.add(cancelEventEditButton, saveEventButton);
 
+        startDateLayout.add(eventStartDay, eventStartMonth, eventStartYear);
+        endDateLayout.add(eventEndDay, eventEndMonth, eventEndYear);
         newEventLayout.add(
                 editEventTitle,
                 eventNameField, eventDescriptionField,
-                privateEvent,
+                privateEventCheckbox,
                 eventTypeChoiceGroup,
                 eventTypeNameField, eventTypeColorPicker,
                 eventTypeSelect,
-                eventStartDay, eventStartMonth, eventStartYear,
-                eventEndDay, eventEndMonth, eventEndYear,
+                startDateLayout, endDateLayout,
                 eventPlaceChoiceGroup,
                 newEventPlaceName, newEventPlaceDescription,
                 newEventPlaceHistory, newEventPlacePrivate,
@@ -776,10 +816,8 @@ public class CampaignsView extends Composite<VerticalLayout> {
         }
 
         User user = maybeUser.get();
-        /*Set<Campaign> campaigns = new HashSet<>();
-        campaigns.addAll(user.getGmCampaigns());
-        campaigns.addAll(user.getPlayerCampaigns());*/
 
+        // TODO: Fix this in Campaign Service! Currently Not showing all & Showing duplicate entries
         List<World> userWorlds = campaignService.getWorldsForUser(user);
         List<Calendar> userCalendars = campaignService.getCalendarsForUser(user);
 
@@ -816,6 +854,15 @@ public class CampaignsView extends Composite<VerticalLayout> {
                 });
     }
 
+    private static boolean isNumeric(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
     private void editEvent(Event event, VerticalLayout eventsRowLayout, VerticalLayout newEventRow ) {
         eventsRowLayout.setVisible(false);
         newEventRow.setVisible(true);
@@ -824,14 +871,5 @@ public class CampaignsView extends Composite<VerticalLayout> {
 
     private void removeEvent(Event event) {
         // TODO: Remove Event
-    }
-
-    private static boolean isNumeric(String str) {
-        try {
-            Integer.parseInt(str);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 }

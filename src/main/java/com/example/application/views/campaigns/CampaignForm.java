@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-// TODO: Clear warnings
 public class CampaignForm extends FormLayout {
     private final TextField nameField = new TextField("Campaign Name");
     private final TextArea descriptionField = new TextArea("Campaign Description");

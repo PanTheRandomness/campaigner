@@ -32,10 +32,9 @@ public class Event extends AbstractEntity {
     private Place place;
 
     @Enumerated(EnumType.STRING)
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Set<ReoccurrenceType> reoccurring;
+    private ReoccurrenceType reoccurring; // Tyyppi muutettu
 
-    private boolean private_;
+    private boolean privateEvent; // Nimi muutettu
 
     // Getters & Setters
 
@@ -87,20 +86,20 @@ public class Event extends AbstractEntity {
         this.place = place;
     }
 
-    public Set<ReoccurrenceType> getReoccurring() {
+    public ReoccurrenceType getReoccurring() {
         return reoccurring;
     }
 
-    public void setReoccurring(Set<ReoccurrenceType> reoccurring) {
+    public void setReoccurring(ReoccurrenceType reoccurring) {
         this.reoccurring = reoccurring;
     }
 
-    public boolean isPrivate_() {
-        return private_;
+    public boolean isPrivateEvent() {
+        return privateEvent;
     }
 
-    public void setPrivate_(boolean private_) {
-        this.private_ = private_;
+    public void setPrivateEvent(boolean privateEvent) {
+        this.privateEvent = privateEvent;
     }
 
 }

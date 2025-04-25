@@ -42,13 +42,13 @@ public class EventDuration extends AbstractEntity {
         return duration;
     }
 
-    public void setDuration(CalendarDate start, @Nullable CalendarDate end, Calendar calendar) {
+    public void setDuration(Calendar calendar) {
         int calculatedDuration;
 
-        if (end == null) {
-            calculatedDuration = calculateDuration(start, calendar.getCurrentDate(), calendar);
+        if (this.endDate == null) {
+            calculatedDuration = calculateDuration(this.startDate, calendar.getCurrentDate(), calendar);
         } else {
-            calculatedDuration = calculateDuration(start, end, calendar);
+            calculatedDuration = calculateDuration(this.startDate, this.endDate, calendar);
         }
 
         this.duration = calculatedDuration;
