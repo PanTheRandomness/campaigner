@@ -10,6 +10,9 @@ import java.util.List;
 
 public interface PlaceRepository extends JpaRepository<Place, Long> {
 
+    @Query("SELECT p FROM Place p WHERE p.area.world = :world")
+    List<Place> findPlaceByWorld(World world);
+
     @Query("SELECT p FROM Place p WHERE p.area.world IN :worlds")
     List<Place> findPlacesByWorlds(@Param("worlds") List<World> worlds);
 }

@@ -271,7 +271,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         });
 
         eventTypeColorPicker.addValueChangeListener(event -> {
-            String eventTypeColor = event.getValue().toString();
+            String eventTypeColor = event.getValue();
         });
 
         // TODO: Set width
@@ -437,9 +437,6 @@ public class CampaignsView extends Composite<VerticalLayout> {
         });
 
         saveEventButton.addClickListener(e -> {
-            // TODO: Save new event
-            // TODO: Modified event save handling
-            // TODO: event duration functionality
             // Validation
             boolean eventIsValid = true;
 
@@ -564,20 +561,69 @@ public class CampaignsView extends Composite<VerticalLayout> {
                 }
             }
 
-            // TODO: Validate Event Place (name/existing)
+            // Validate Event Place (name/existing)
+            if ("Create new Place".equals(eventPlaceChoiceGroup.getValue()) && newEventPlaceName.getValue().trim().isEmpty()) {
+                newEventPlaceName.setInvalid(true);
+                newEventPlaceName.setErrorMessage("Please enter a place name.");
+                eventIsValid = false;
+            } else if ("Choose existing Place".equals(eventPlaceChoiceGroup.getValue()) && newEventPlaceSelect.getValue() == null) {
+                newEventPlaceSelect.setInvalid(true);
+                newEventPlaceSelect.setErrorMessage("Please select a place.");
+                eventIsValid = false;
+            } else if ("Create new Place".equals(eventPlaceChoiceGroup.getValue()) && placeRepository
+                    .findPlaceByWorld(campaign.getCampaignWorld())
+                    .stream()
+                    .anyMatch(place -> place.getPlaceName().equalsIgnoreCase(newEventPlaceName.getValue().trim()))) {
+                newEventPlaceName.setInvalid(true);
+                newEventPlaceName.setErrorMessage("Place already exists in this campaign's world.");
+                eventIsValid = false;
+            } else {
+                newEventPlaceName.setInvalid(false);
+                newEventPlaceSelect.setInvalid(false);
+            }
 
-            // TODO: Validate Event Place Area (if new Place) (name/existing)
+            // Validate Event Place Area (if new Place) (name/existing)
+            if ("Create new Area".equals(eventPlaceAreaChoiceGroup.getValue()) && newEventPlaceAreaName.getValue().trim().isEmpty()) {
+                newEventPlaceAreaName.setInvalid(true);
+                newEventPlaceAreaName.setErrorMessage("Please enter a name for area.");
+                eventIsValid = false;
+            } else if ("Choose existing Area".equals(eventPlaceAreaChoiceGroup.getValue()) && newEventPlaceAreaSelect.getValue() == null) {
+                newEventPlaceAreaSelect.setInvalid(true);
+                newEventPlaceAreaSelect.setErrorMessage("Please select a place.");
+                eventIsValid = false;
+            } else if ("Create new Area".equals(eventPlaceAreaChoiceGroup.getValue()) && areaRepository
+                    .findByWorld(campaign.getCampaignWorld())
+                    .stream()
+                    .anyMatch(area -> area.getAreaName().equalsIgnoreCase(newEventPlaceAreaName.getValue().trim()))) {
+                newEventPlaceAreaName.setInvalid(true);
+                newEventPlaceAreaName.setErrorMessage("Area already exists in this campaign's world.");
+                eventIsValid = false;
+            } else {
+                newEventPlaceAreaName.setInvalid(false);
+                newEventPlaceAreaSelect.setInvalid(false);
+            }
 
-            // TODO: Validate Reoccurrence Type
+            // Validate Reoccurrence Type
+            if (eventReoccurrenceTypeSelect.getValue() == null) {
+                eventReoccurrenceTypeSelect.setInvalid(true);
+                eventReoccurrenceTypeSelect.setErrorMessage("Please select a reoccurrence type.");
+                eventIsValid = false;
+            } else {
+                eventReoccurrenceTypeSelect.setInvalid(false);
+            }
 
             if (eventIsValid) {
-                // TODO: Handle Event Type Save if new
+                // TODO: Handle Event Type Save if new event type
                 // TODO: Handle Event Duration Save
+
                 EventDuration eventDuration = new EventDuration();
-                // TODO: Handle Event Area Save if new
-                // TODO Handle Event Place Save if new
+                // TODO: Handle Event Area Save if new area (link to world)
+                // TODO Handle Event Place Save if new place (link to area)
                 // TODO: Create event and Handle save
-                Event editedEvent = new Event();
+                // TODO: Modified event save handling
+//                Event editedEvent = new Event(); // TODO: Fix Write-Only
+//                editedEvent.setName(newEventPlaceName.getValue().trim());
+//                editedEvent.setDescription(newEventPlaceDescription.getValue().trim());
 
                 // Finally change back to eventGrid view
                 newEventLayout.setVisible(false);
@@ -673,7 +719,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         gms.forEach(gm -> characterMap.put(gm, "-"));
         // TODO: Add Characters when Character Entities have been added
 
-        playerGrid.addColumn(user -> characterMap.get(user))
+        playerGrid.addColumn(characterMap::get)
                 .setHeader("Character")
                 .setAutoWidth(true)
                 .setTextAlign(ColumnTextAlign.CENTER);
@@ -730,9 +776,9 @@ public class CampaignsView extends Composite<VerticalLayout> {
         }
 
         User user = maybeUser.get();
-        Set<Campaign> campaigns = new HashSet<>();
+        /*Set<Campaign> campaigns = new HashSet<>();
         campaigns.addAll(user.getGmCampaigns());
-        campaigns.addAll(user.getPlayerCampaigns());
+        campaigns.addAll(user.getPlayerCampaigns());*/
 
         List<World> userWorlds = campaignService.getWorldsForUser(user);
         List<Calendar> userCalendars = campaignService.getCalendarsForUser(user);
