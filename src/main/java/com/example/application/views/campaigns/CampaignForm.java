@@ -218,9 +218,7 @@ public class CampaignForm extends FormLayout {
             // TODO: Fix moon fields going below save button
             // TODO: Fix field amount if moon count lessens
             else if (newMoonCount < moonFields.size()) {
-                for (int i = moonFields.size() - 1; i >= newMoonCount; i--) {
-                    moonFields.remove(i);
-                }
+                moonFields.subList(newMoonCount, moonFields.size()).clear();
             }
         });
 
@@ -306,7 +304,6 @@ public class CampaignForm extends FormLayout {
 
         // Validate moons if a new calendar is being created
         if ("Create New".equals(calendarChoiceGroup.getValue())) {
-            List<Moon> moons = new ArrayList<>();
             for (VerticalLayout moonLayout : moonFields) {
                 TextField moonNameField = (TextField) moonLayout.getChildren().findFirst().orElse(null);
                 if (moonNameField != null && moonNameField.getValue().trim().isEmpty()) {
@@ -314,6 +311,7 @@ public class CampaignForm extends FormLayout {
                     moonNameField.setErrorMessage("Moon name cannot be empty.");
                     isValid = false;
                 } else {
+                    assert moonNameField != null;
                     moonNameField.setInvalid(false);
                 }
             }
@@ -344,7 +342,7 @@ public class CampaignForm extends FormLayout {
 
     // Handle World creation or selection
     private World handleWorldSelection() {
-        World selectedWorld = null;
+        World selectedWorld;
         if ("Create New".equals(worldChoiceGroup.getValue())) {
             String newWorldName = newWorldField.getValue().trim();
             selectedWorld = new World();
@@ -358,7 +356,7 @@ public class CampaignForm extends FormLayout {
 
     // Handle Calendar creation or selection
     private Calendar handleCalendarSelection() {
-        Calendar selectedCalendar = null;
+        Calendar selectedCalendar;
         if ("Create New".equals(calendarChoiceGroup.getValue())) {
             selectedCalendar = new Calendar();
             selectedCalendar.setCalendarName(newCalendarField.getValue().trim());
@@ -378,8 +376,11 @@ public class CampaignForm extends FormLayout {
                 TextField shiftField = (TextField) moonLayout.getChildren().skip(2).findFirst().orElse(null);
 
                 Moon moon = new Moon();
+                assert moonNameField != null;
                 moon.setMoonName(moonNameField.getValue());
+                assert cycleField != null;
                 moon.setCycle(Double.parseDouble(cycleField.getValue()));
+                assert shiftField != null;
                 moon.setShift(Integer.parseInt(shiftField.getValue()));
                 moon.setCalendar(selectedCalendar);
                 moons.add(moon);
@@ -426,8 +427,8 @@ public class CampaignForm extends FormLayout {
         descriptionField.setValue(campaign.getCampaignDescription());
 
         // Users
-        List<User> gms = campaign.getGms() != null ? campaign.getGms() : new ArrayList<>();
-        List<User> players = campaign.getPlayers() != null ? campaign.getPlayers() : new ArrayList<>();
+        List<User> gms = campaign.getGms();
+        List<User> players = campaign.getPlayers();
         currentGmsField.setItems(gms);
         currentPlayersField.setItems(players);
 
@@ -438,7 +439,7 @@ public class CampaignForm extends FormLayout {
             worldSelector.setValue(world);
         } else {
             worldChoiceGroup.setValue("Create New");
-            newWorldField.setValue(world.getWorldName() != null ? world.getWorldName() : "");
+            newWorldField.setValue(world.getWorldName());
         }
 
         // Calendar
@@ -448,7 +449,7 @@ public class CampaignForm extends FormLayout {
             calendarSelector.setValue(calendar);
         } else {
             calendarChoiceGroup.setValue("Create New");
-            newCalendarField.setValue(calendar.getCalendarName() != null ? calendar.getCalendarName() : "");
+            newCalendarField.setValue(calendar.getCalendarName());
 
             monthsInYearField.setValue(String.valueOf(calendar.getMonthsInYear()));
             daysInMonthField.setValue(String.valueOf(calendar.getDaysInMonth()));

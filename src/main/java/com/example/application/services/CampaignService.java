@@ -35,12 +35,13 @@ public class CampaignService {
         return calendars;
     }
 
+    // TODO: Fix world list generation for user to be used in displaying worlds for campaign editing
     public List<World> getWorldsForUser(User user) {
-        List<Campaign> campaigns = campaignRepository.findByGms(user);  // Hakee käyttäjän kampanjat
+        List<Campaign> campaigns = campaignRepository.findByGms(user);
         List<World> worlds = new ArrayList<>();
 
         for (Campaign campaign : campaigns) {
-            worlds.addAll(worldRepository.findByCampaigns(campaign));  // Hakee kampanjan maailmat
+            worlds.addAll(worldRepository.findByCampaigns(campaign));
         }
 
         return worlds;
