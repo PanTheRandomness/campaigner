@@ -32,7 +32,6 @@ import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import jakarta.annotation.security.PermitAll;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
@@ -45,6 +44,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 @PermitAll
 public class CampaignsView extends Composite<VerticalLayout> {
 
+    // TODO: Remove unused code
     private final CampaignRepository campaignRepository;
     private final UserRepository userRepository;
     private final WorldRepository worldRepository;
@@ -230,7 +230,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         // TODO: Only show private events to GMs
         eventGrid.setItems(campaignEvents);
 
-        // TODO: Show only to GMs
+        // TODO: Show only to Campaign GMs
         Button addEventButton = new Button("Add Event");
 
         // Event Editor
@@ -259,23 +259,33 @@ public class CampaignsView extends Composite<VerticalLayout> {
 
         // Toggle create new/select event type visibility
         eventTypeChoiceGroup.addValueChangeListener(event -> {
-            boolean isCreateNew = "Create New".equals(eventTypeChoiceGroup.getValue());
+            boolean isCreateNew = "Create new Event Type".equals(eventTypeChoiceGroup.getValue());
             eventTypeNameField.setVisible(isCreateNew);
-            eventTypeColorPicker.setVisible(isCreateNew); // TODO: Fix bug: This disappears when changing choice?
+            eventTypeColorPicker.setVisible(isCreateNew);
             eventTypeSelect.setVisible(!isCreateNew);
         });
 
         eventTypeSelect.addValueChangeListener(event -> {
             EventType selectedEventType = eventTypeSelect.getValue();
-            boolean eventTypeSelected = selectedEventType != null;
+            // boolean eventTypeSelected = selectedEventType != null;
         });
 
         eventTypeColorPicker.addValueChangeListener(event -> {
             String eventTypeColor = event.getValue().toString();
         });
 
-        DatePicker eventStartDateField = new DatePicker("Event Start Date");
-        DatePicker eventEndDateField = new DatePicker("Event End Date. Leave blank if still ongoing.");
+        // TODO: Set width
+        TextField eventStartDay = new TextField("Event Start Day");
+        TextField eventStartMonth = new TextField("Event Start Month");
+        TextField eventStartYear = new TextField("Event Start Year");
+
+        TextField eventEndDay = new TextField("Event End Day");
+        TextField eventEndMonth = new TextField("Event End Month");
+        TextField eventEndYear = new TextField("Event End Year");
+
+        eventEndDay.setTooltipText("Leave empty if event is still ongoing");
+        eventEndMonth.setTooltipText("Leave empty if event is ongoing");
+        eventEndYear.setTooltipText("Leave empty if event is ongoing");
 
         // Event Place & Area
         TextField newEventPlaceName = new TextField("New Event Place Name");
@@ -316,7 +326,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
 
         // Toggle create new/select place visibility
         eventPlaceChoiceGroup.addValueChangeListener(event -> {
-            boolean isCreateNew = "Create New".equals(eventPlaceChoiceGroup.getValue());
+            boolean isCreateNew = "Create new Place".equals(eventPlaceChoiceGroup.getValue());
             newEventPlaceName.setVisible(isCreateNew);
             newEventPlaceDescription.setVisible(isCreateNew);
             newEventPlaceHistory.setVisible(isCreateNew);
@@ -327,12 +337,12 @@ public class CampaignsView extends Composite<VerticalLayout> {
         // Selected Event Place
         newEventPlaceSelect.addValueChangeListener(event -> {
             Place selectedPlace = newEventPlaceSelect.getValue();
-            boolean eventPlaceSelected = selectedPlace != null;
+            // boolean eventPlaceSelected = selectedPlace != null;
         });
 
         // Toggle create new/select area visibility
         eventPlaceAreaChoiceGroup.addValueChangeListener(event -> {
-            boolean isCreateNew = "Create New".equals(eventPlaceAreaChoiceGroup.getValue());
+            boolean isCreateNew = "Create new Area".equals(eventPlaceAreaChoiceGroup.getValue());
             newEventPlaceAreaName.setVisible(isCreateNew);
             newEventPlaceAreaDescription.setVisible(isCreateNew);
             newEventPlaceAreaHistory.setVisible(isCreateNew);
@@ -343,7 +353,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         // Selected Event Place Area
         newEventPlaceAreaSelect.addValueChangeListener(event -> {
             Area selectedArea = newEventPlaceAreaSelect.getValue();
-            boolean eventPlaceAreaSelected = selectedArea != null;
+            // boolean eventPlaceAreaSelected = selectedArea != null;
         });
 
         // Reoccurrence type
@@ -354,7 +364,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
 
         eventReoccurrenceTypeSelect.addValueChangeListener(event -> {
            ReoccurrenceType selectedReoccurrenceType = eventReoccurrenceTypeSelect.getValue();
-           boolean reoccurrenceTypeSelected = selectedReoccurrenceType != null;
+           // boolean reoccurrenceTypeSelected = selectedReoccurrenceType != null;
         });
 
         // Editor Buttons
@@ -436,14 +446,123 @@ public class CampaignsView extends Composite<VerticalLayout> {
             // Validate name
             if (eventNameField.getValue().trim().isEmpty()) {
                 eventNameField.setInvalid(true);
+                eventNameField.setErrorMessage("Please enter a new name for event.");
                 eventIsValid = false;
             } else {
                 eventNameField.setInvalid(false);
             }
 
-            // TODO: Validate Event Type
+            // Validate Event Type
+            if ("Create new Event Type".equals(eventTypeChoiceGroup.getValue()) && eventTypeNameField.getValue().trim().isEmpty()) {
+                eventTypeNameField.setInvalid(true);
+                eventTypeNameField.setErrorMessage("Please enter a name for new event type.");
+                eventIsValid = false;
+            } else if ("Choose existing Event Type".equals(eventTypeChoiceGroup.getValue()) && eventTypeSelect.getValue() == null) {
+                eventTypeSelect.setInvalid(true);
+                eventTypeSelect.setErrorMessage("Please select an event type.");
+                eventIsValid = false;
+            } else {
+                eventTypeNameField.setInvalid(false);
+                eventTypeSelect.setInvalid(false);
+            }
 
-            // TODO: Validate Event Duration
+            // NOTE: Can be made more efficient with local variables (?)
+            // Validate Event Start Date
+            if(eventStartDay.getValue().trim().isEmpty() || !isNumeric(eventStartDay.getValue())) {
+                eventStartDay.setInvalid(true);
+                eventStartDay.setErrorMessage("Please enter a valid start day for event.");
+                eventIsValid = false;
+            } else if (Integer.parseInt(eventStartDay.getValue()) < 1 || Integer.parseInt(eventStartDay.getValue()) > campaign.getCalendar().getDaysInMonth()){
+                eventStartDay.setInvalid(true);
+                eventStartDay.setErrorMessage("The day you have selected falls outside the scope of this campaign's calendar.");
+                eventIsValid = false;
+            } else {
+                eventStartDay.setInvalid(false);
+            }
+
+            if(eventStartMonth.getValue().trim().isEmpty() || !isNumeric(eventStartMonth.getValue())) {
+                eventStartMonth.setInvalid(true);
+                eventStartMonth.setErrorMessage("Please enter a valid start month for event.");
+                eventIsValid = false;
+            } else if (Integer.parseInt(eventStartMonth.getValue()) < 1 || Integer.parseInt(eventStartMonth.getValue()) > campaign.getCalendar().getMonthsInYear()){
+                eventStartMonth.setInvalid(true);
+                eventStartMonth.setErrorMessage("The month you have selected falls outside the scope of this campaign's calendar.");
+                eventIsValid = false;
+            } else {
+                eventStartMonth.setInvalid(false);
+            }
+
+            // NOTE! Event year CAN BE negative
+            if(eventStartYear.getValue().trim().isEmpty() || !isNumeric(eventStartYear.getValue()) ) {
+                eventStartYear.setInvalid(true);
+                eventStartYear.setErrorMessage("Please enter a valid start year for event.");
+                eventIsValid = false;
+            } else {
+                eventStartYear.setInvalid(false);
+            }
+
+            // Validate Event End Date
+            if (!eventEndDay.getValue().trim().isEmpty() || !eventEndMonth.getValue().trim().isEmpty() || !eventEndYear.getValue().trim().isEmpty()) {
+                // If end date has been given
+                if (eventEndDay.getValue().trim().isEmpty() || !isNumeric(eventEndDay.getValue())) {
+                    eventEndDay.setInvalid(true);
+                    eventEndDay.setErrorMessage("Please enter a valid end day for event.");
+                    eventIsValid = false;
+                } else if (Integer.parseInt(eventEndDay.getValue()) < 1 || Integer.parseInt(eventEndDay.getValue()) > campaign.getCalendar().getDaysInMonth()){
+                    eventEndDay.setInvalid(true);
+                    eventEndDay.setErrorMessage("The day you have selected falls outside the scope of this campaign's calendar.");
+                    eventIsValid = false;
+                } else {
+                    eventEndDay.setInvalid(false);
+                }
+
+                if(eventEndMonth.getValue().trim().isEmpty() || !isNumeric(eventEndMonth.getValue())) {
+                    eventEndMonth.setInvalid(true);
+                    eventEndMonth.setErrorMessage("Please enter a valid end month for event.");
+                    eventIsValid = false;
+                } else if (Integer.parseInt(eventEndMonth.getValue()) < 1 || Integer.parseInt(eventEndMonth.getValue()) > campaign.getCalendar().getMonthsInYear()){
+                    eventEndMonth.setInvalid(true);
+                    eventEndMonth.setErrorMessage("The month you have selected falls outside the scope of this campaign's calendar.");
+                    eventIsValid = false;
+                } else {
+                    eventEndMonth.setInvalid(false);
+                }
+
+                // NOTE! Event year CAN BE negative
+                if(eventEndYear.getValue().trim().isEmpty() || !isNumeric(eventEndYear.getValue()) ) {
+                    eventEndYear.setInvalid(true);
+                    eventEndYear.setErrorMessage("Please enter a valid end year for event.");
+                    eventIsValid = false;
+                } else {
+                    eventEndYear.setInvalid(false);
+                }
+
+                int startYear = Integer.parseInt(eventStartYear.getValue().trim());
+                int startMonth = Integer.parseInt(eventStartMonth.getValue().trim());
+                int startDay = Integer.parseInt(eventStartDay.getValue().trim());
+                int endYear = Integer.parseInt(eventEndYear.getValue().trim());
+                int endMonth = Integer.parseInt(eventEndMonth.getValue().trim());
+                int endDay = Integer.parseInt(eventEndDay.getValue().trim());
+
+                // End date cannot be before start date
+                if (endYear < startYear) {
+                    eventEndYear.setInvalid(true);
+                    eventEndYear.setErrorMessage("Event end year cannot end before its start year.");
+                    eventIsValid = false;
+                } else if (endYear == startYear && endMonth < startMonth) {
+                    eventEndMonth.setInvalid(true);
+                    eventEndMonth.setErrorMessage("Event end month cannot end before its start year.");
+                    eventIsValid = false;
+                } else if (endYear == startYear && endMonth == startMonth && endDay < startDay) {
+                    eventEndDay.setInvalid(true);
+                    eventEndDay.setErrorMessage("Event end day cannot end before its start day");
+                    eventIsValid = false;
+                } else {
+                    eventEndYear.setInvalid(false);
+                    eventEndMonth.setInvalid(false);
+                    eventEndDay.setInvalid(false);
+                }
+            }
 
             // TODO: Validate Event Place (name/existing)
 
@@ -489,7 +608,8 @@ public class CampaignsView extends Composite<VerticalLayout> {
                 eventTypeChoiceGroup,
                 eventTypeNameField, eventTypeColorPicker,
                 eventTypeSelect,
-                eventStartDateField, eventEndDateField,
+                eventStartDay, eventStartMonth, eventStartYear,
+                eventEndDay, eventEndMonth, eventEndYear,
                 eventPlaceChoiceGroup,
                 newEventPlaceName, newEventPlaceDescription,
                 newEventPlaceHistory, newEventPlacePrivate,
@@ -658,5 +778,14 @@ public class CampaignsView extends Composite<VerticalLayout> {
 
     private void removeEvent(Event event) {
         // TODO: Remove Event
+    }
+
+    private static boolean isNumeric(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }
