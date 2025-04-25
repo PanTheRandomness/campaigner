@@ -54,6 +54,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
     private final EventTypeRepository eventTypeRepository;
     private final EventDurationRepository eventDurationRepository;
     private final PlaceRepository placeRepository;
+    private final AreaRepository areaRepository;
 
     private final CampaignService campaignService;
     private final AuthenticatedUser authenticatedUser;
@@ -69,7 +70,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
                          WorldRepository worldRepository, CalendarRepository calendarRepository,
                          MoonRepository moonRepository, EventRepository eventRepository,
                          EventTypeRepository eventTypeRepository, EventDurationRepository eventDurationRepository,
-                         PlaceRepository placeRepository,
+                         PlaceRepository placeRepository, AreaRepository areaRepository,
                          CampaignService campaignService, AuthenticatedUser authenticatedUser) {
         this.campaignRepository = campaignRepository;
         this.userRepository = userRepository;
@@ -80,6 +81,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         this.eventTypeRepository = eventTypeRepository;
         this.eventDurationRepository = eventDurationRepository;
         this.placeRepository = placeRepository;
+        this.areaRepository = areaRepository;
 
         this.campaignService = campaignService;
         this.authenticatedUser = authenticatedUser;
@@ -191,6 +193,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         pages.add(messageLayout);
     }
 
+    // Here are the contents of the Overview, Timeline, Players & World Tabs
     private void updateTabs(Campaign campaign) {
         // TODO: Fix Grid Sizes!!
         tabs.removeAll();
@@ -224,12 +227,13 @@ public class CampaignsView extends Composite<VerticalLayout> {
         eventGrid.setSizeFull();
         eventGrid.getStyle().set("font-size", "var(--lumo-font-size-l)");
 
+        // TODO: Only show private events to GMs
         eventGrid.setItems(campaignEvents);
 
+        // TODO: Show only to GMs
         Button addEventButton = new Button("Add Event");
 
         // Event Editor
-        // TODO: Show only to GMs
         H3 editEventTitle = new H3("Event Editor");
 
         // Event name, description, private
@@ -257,7 +261,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         eventTypeChoiceGroup.addValueChangeListener(event -> {
             boolean isCreateNew = "Create New".equals(eventTypeChoiceGroup.getValue());
             eventTypeNameField.setVisible(isCreateNew);
-            eventTypeColorPicker.setVisible(isCreateNew); // TODO: This disappears when changing choice?
+            eventTypeColorPicker.setVisible(isCreateNew); // TODO: Fix bug: This disappears when changing choice?
             eventTypeSelect.setVisible(!isCreateNew);
         });
 
@@ -273,40 +277,83 @@ public class CampaignsView extends Composite<VerticalLayout> {
         DatePicker eventStartDateField = new DatePicker("Event Start Date");
         DatePicker eventEndDateField = new DatePicker("Event End Date. Leave blank if still ongoing.");
 
-        // Event Place
-        TextField newEventPlace = new TextField("New Event Place");
-        Select<Place> eventPlaceSelect = new Select<>();
-        List<Place> userPlaces = placeRepository.findPlacesByWorlds(worldRepository.findByCampaignsIn(campaignRepository.findByGms(loggedUser)));
-        eventPlaceSelect.setLabel("Select Event Place");
-        eventPlaceSelect.setItemLabelGenerator(Place::getPlaceName);
-        eventPlaceSelect.setItems(userPlaces);
-        eventPlaceSelect.setVisible(false);
+        // Event Place & Area
+        TextField newEventPlaceName = new TextField("New Event Place Name");
+        TextArea newEventPlaceDescription = new TextArea("New Event Description");
+        TextArea newEventPlaceHistory = new TextArea("New Event Place History");
+        Checkbox newEventPlacePrivate = new Checkbox("Private Place?");
 
-        RadioButtonGroup<String> placeChoiceGroup = new RadioButtonGroup<>("Create new or choose existing Place");
-        placeChoiceGroup.setItems("Create new Place", "Choose existing Place");
-        placeChoiceGroup.setValue("Create new Place");
+        TextField newEventPlaceAreaName = new TextField("New Area Name");
+        TextArea newEventPlaceAreaDescription = new TextArea("New Area Description");
+        TextArea newEventPlaceAreaHistory = new TextArea("New Area History");
+        Checkbox newEventPlaceAreaPrivate = new Checkbox("Private Area?");
+
+        Select<Place> newEventPlaceSelect = new Select<>();
+        Select<Area> newEventPlaceAreaSelect = new Select<>();
+
+        List<Place> userPlaces = placeRepository.findPlacesByWorlds(worldRepository.findByCampaignsIn(campaignRepository.findByGms(loggedUser)));
+        List<Area> userAreas = areaRepository.findByWorld(campaign.getCampaignWorld());
+
+        // Place Select configuration
+        newEventPlaceSelect.setLabel("Select Event Place");
+        newEventPlaceSelect.setItemLabelGenerator(Place::getPlaceName);
+        newEventPlaceSelect.setItems(userPlaces);
+        newEventPlaceSelect.setVisible(false);
+
+        // Area Select Configuration
+        newEventPlaceAreaSelect.setLabel("Select place's Area");
+        newEventPlaceAreaSelect.setItemLabelGenerator(Area::getAreaName);
+        newEventPlaceAreaSelect.setItems(userAreas);
+        newEventPlaceAreaSelect.setVisible(false);
+
+        RadioButtonGroup<String> eventPlaceChoiceGroup = new RadioButtonGroup<>("Create new or choose existing Place");
+        eventPlaceChoiceGroup.setItems("Create new Place", "Choose existing Place");
+        eventPlaceChoiceGroup.setValue("Create new Place");
+
+        RadioButtonGroup<String> eventPlaceAreaChoiceGroup = new RadioButtonGroup<>("Create new or choose existing Area");
+        eventPlaceAreaChoiceGroup.setItems("Create new Area", "Choose existing Area");
+        eventPlaceAreaChoiceGroup.setValue("Create new Area");
 
         // Toggle create new/select place visibility
-        placeChoiceGroup.addValueChangeListener(event -> {
-            boolean isCreateNew = "Create New".equals(placeChoiceGroup.getValue());
-            newEventPlace.setVisible(isCreateNew);
-            eventPlaceSelect.setVisible(!isCreateNew);
+        eventPlaceChoiceGroup.addValueChangeListener(event -> {
+            boolean isCreateNew = "Create New".equals(eventPlaceChoiceGroup.getValue());
+            newEventPlaceName.setVisible(isCreateNew);
+            newEventPlaceDescription.setVisible(isCreateNew);
+            newEventPlaceHistory.setVisible(isCreateNew);
+            newEventPlacePrivate.setVisible(isCreateNew);
+            newEventPlaceSelect.setVisible(!isCreateNew);
         });
 
-        // Selected Event Type
-        eventPlaceSelect.addValueChangeListener(event -> {
-            Place selectedPlace = eventPlaceSelect.getValue();
+        // Selected Event Place
+        newEventPlaceSelect.addValueChangeListener(event -> {
+            Place selectedPlace = newEventPlaceSelect.getValue();
             boolean eventPlaceSelected = selectedPlace != null;
         });
 
-        // Reoccurrence type
-        Select<ReoccurrenceType> reoccurrenceTypeSelect = new Select<>();
-        List<ReoccurrenceType> reoccurrenceTypes = Arrays.asList(ReoccurrenceType.values());
-        reoccurrenceTypeSelect.setItems(reoccurrenceTypes);
-        reoccurrenceTypeSelect.setLabel("Select Reoccurrence Type");
+        // Toggle create new/select area visibility
+        eventPlaceAreaChoiceGroup.addValueChangeListener(event -> {
+            boolean isCreateNew = "Create New".equals(eventPlaceAreaChoiceGroup.getValue());
+            newEventPlaceAreaName.setVisible(isCreateNew);
+            newEventPlaceAreaDescription.setVisible(isCreateNew);
+            newEventPlaceAreaHistory.setVisible(isCreateNew);
+            newEventPlaceAreaPrivate.setVisible(isCreateNew);
+            newEventPlaceAreaSelect.setVisible(!isCreateNew);
+        });
 
-        reoccurrenceTypeSelect.addValueChangeListener(event -> {
-           ReoccurrenceType selectedReoccurrenceType = reoccurrenceTypeSelect.getValue();
+        // Selected Event Place Area
+        newEventPlaceAreaSelect.addValueChangeListener(event -> {
+            Area selectedArea = newEventPlaceAreaSelect.getValue();
+            boolean eventPlaceAreaSelected = selectedArea != null;
+        });
+
+        // Reoccurrence type
+        Select<ReoccurrenceType> eventReoccurrenceTypeSelect = new Select<>();
+        List<ReoccurrenceType> reoccurrenceTypes = Arrays.asList(ReoccurrenceType.values());
+        eventReoccurrenceTypeSelect.setItems(reoccurrenceTypes);
+        eventReoccurrenceTypeSelect.setLabel("Select Reoccurrence Type");
+
+        eventReoccurrenceTypeSelect.addValueChangeListener(event -> {
+           ReoccurrenceType selectedReoccurrenceType = eventReoccurrenceTypeSelect.getValue();
            boolean reoccurrenceTypeSelected = selectedReoccurrenceType != null;
         });
 
@@ -380,12 +427,53 @@ public class CampaignsView extends Composite<VerticalLayout> {
         });
 
         saveEventButton.addClickListener(e -> {
-            // TODO: Save new event / save modified event
+            // TODO: Save new event
+            // TODO: Modified event save handling
             // TODO: event duration functionality
-            EventDuration eventDuration = new EventDuration();
+            // Validation
+            boolean eventIsValid = true;
 
-            newEventLayout.setVisible(false);
-            eventsLayout.setVisible(true);
+            // Validate name
+            if (eventNameField.getValue().trim().isEmpty()) {
+                eventNameField.setInvalid(true);
+                eventIsValid = false;
+            } else {
+                eventNameField.setInvalid(false);
+            }
+
+            // TODO: Validate Event Type
+
+            // TODO: Validate Event Duration
+
+            // TODO: Validate Event Place (name/existing)
+
+            // TODO: Validate Event Place Area (if new Place) (name/existing)
+
+            // TODO: Validate Reoccurrence Type
+
+            if (eventIsValid) {
+                // TODO: Handle Event Type Save if new
+                // TODO: Handle Event Duration Save
+                EventDuration eventDuration = new EventDuration();
+                // TODO: Handle Event Area Save if new
+                // TODO Handle Event Place Save if new
+                // TODO: Create event and Handle save
+                Event editedEvent = new Event();
+
+                // Finally change back to eventGrid view
+                newEventLayout.setVisible(false);
+                eventsLayout.setVisible(true);
+            }
+
+            /* Things to save
+            * - Description
+            * - Private
+            * - Event Type: new (type*, colour* => create) or existing*
+            * - Event Duration: Start date* & End date, calculate duration*
+            * - Event Place: new (name*, description, area!, history, private) or existing*
+            * - Event Place Area: new (name*, description, history, world (current campaign world), private) or existing*
+            * - Reoccurrence Type*
+            * */
         });
 
         // Add Components to Layouts
@@ -393,6 +481,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         eventsHeadingLayout.add(eventGridTitle, addEventButton);
         eventsLayout.add(eventsHeadingLayout, eventGrid);
         newEventButtonLayout.add(cancelEventEditButton, saveEventButton);
+
         newEventLayout.add(
                 editEventTitle,
                 eventNameField, eventDescriptionField,
@@ -401,9 +490,15 @@ public class CampaignsView extends Composite<VerticalLayout> {
                 eventTypeNameField, eventTypeColorPicker,
                 eventTypeSelect,
                 eventStartDateField, eventEndDateField,
-                placeChoiceGroup,
-                newEventPlace, eventPlaceSelect,
-                reoccurrenceTypeSelect,
+                eventPlaceChoiceGroup,
+                newEventPlaceName, newEventPlaceDescription,
+                newEventPlaceHistory, newEventPlacePrivate,
+                newEventPlaceSelect,
+                eventPlaceAreaChoiceGroup,
+                newEventPlaceAreaName, newEventPlaceAreaDescription,
+                newEventPlaceAreaHistory, newEventPlaceAreaPrivate,
+                newEventPlaceAreaSelect,
+                eventReoccurrenceTypeSelect,
                 newEventButtonLayout
         );
 
