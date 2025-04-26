@@ -774,7 +774,13 @@ public class CampaignTabsBuilder {
         event.setPlace(place);
 
         // Dates
-        EventDuration duration = new EventDuration();
+        EventDuration duration;
+        if (event.getDuration() != null) {
+            duration = event.getDuration();
+        } else {
+            duration = new EventDuration();
+        }
+
         duration.setStartDate(new CalendarDate(
                 Integer.parseInt(startYear.getValue()),
                 Integer.parseInt(startMonth.getValue()),
@@ -798,8 +804,7 @@ public class CampaignTabsBuilder {
 
         // Reoccurrence
         event.setReoccurring(reoccurrenceTypeSelect.getValue());
-
-        System.out.println(event);
+        // System.out.println(event);
     }
 
     private VerticalLayout eventTypeEditorForm() {
