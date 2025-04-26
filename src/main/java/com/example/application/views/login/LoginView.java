@@ -25,11 +25,9 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
         LoginI18n i18n = LoginI18n.createDefault();
         i18n.setHeader(new LoginI18n.Header());
         i18n.getHeader().setTitle("Campaigner");
-        i18n.getHeader().setDescription("Login");
+        i18n.getHeader().setDescription(getTranslation("login.description"));
         i18n.setAdditionalInformation(null);
         setI18n(i18n);
-
-        // TODO: Add link to register
 
         setForgotPasswordButtonVisible(false);
         setOpened(true);

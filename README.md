@@ -44,7 +44,7 @@ ________________________________________________________________________________
  ✅ Työ julkaistu GIT:iin <br>
  ✅ Salasanojen suojaus Vaadin Securityn Hashauksella <br>
  ✅ Server Push toteutettu sovelluksessa: esim. eventGrid ja userGrid <br>
- ❌ Lokalisointi vähintään yhdellä kielellä <br>
+ ✅ Lokalisointi vähintään yhdellä kielellä: suomi <br>
  ❌ Työstä tehty Docker Image <br>
  ❌ Tietokannan ja sovelluksen määrittäminen Docker Composen avulla <br>
  

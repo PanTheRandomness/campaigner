@@ -79,7 +79,7 @@ public class MainLayout extends AppLayout implements RouterLayout {
     private Footer createContentFooter() {
         Footer footer = new Footer();
         footer.addClassName("content-footer");
-        Span footerText = new Span("© Campaigner 2025 - All rights reserved.");
+        Span footerText = new Span(getTranslation("footer.text"));
         footer.add(footerText);
 
         return footer;
@@ -87,7 +87,7 @@ public class MainLayout extends AppLayout implements RouterLayout {
 
     private void addHeaderContent() {
         DrawerToggle toggle = new DrawerToggle();
-        toggle.setAriaLabel("Menu toggle");
+        toggle.setAriaLabel(getTranslation("menu.toggle"));
 
         viewTitle = new H1();
         viewTitle.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
@@ -148,13 +148,13 @@ public class MainLayout extends AppLayout implements RouterLayout {
             div.add(new Icon("lumo", "dropdown"));
             div.addClassNames(LumoUtility.Display.FLEX, LumoUtility.AlignItems.CENTER, LumoUtility.Gap.SMALL);
             userName.add(div);
-            userName.getSubMenu().addItem("Sign out", e -> {
+            userName.getSubMenu().addItem(getTranslation("footer.signout"), e -> {
                 authenticatedUser.logout();
             });
 
             layout.add(userMenu);
         } else {
-            Anchor loginLink = new Anchor("login", "Sign in");
+            Anchor loginLink = new Anchor("login",  getTranslation("footer.signin"));
             layout.add(loginLink);
         }
 

@@ -40,11 +40,11 @@ public class RegisterView extends Composite<VerticalLayout> {
 
         VerticalLayout layoutColumn2 = new VerticalLayout();
         H2 h2 = new H2();
-        TextField usernameField = new TextField("Username");
-        TextField nameField = new TextField("Name");
-        EmailField emailField = new EmailField("Email");
-        PasswordField passwordField = new PasswordField("Password");
-        PasswordField passwordField2 = new PasswordField("Password again");
+        TextField usernameField = new TextField(getTranslation("register.username"));
+        TextField nameField = new TextField(getTranslation("register.name"));
+        EmailField emailField = new EmailField(getTranslation("register.email"));
+        PasswordField passwordField = new PasswordField(getTranslation("register.password"));
+        PasswordField passwordField2 = new PasswordField(getTranslation("register.password2"));
 
         HorizontalLayout layoutRow = new HorizontalLayout();
         Button buttonSecondary = new Button();
@@ -61,23 +61,23 @@ public class RegisterView extends Composite<VerticalLayout> {
         layoutColumn2.setJustifyContentMode(JustifyContentMode.CENTER);
         layoutColumn2.setAlignItems(Alignment.CENTER);
 
-        h2.setText("Register");
+        h2.setText(getTranslation("register"));
         layoutColumn2.setAlignSelf(FlexComponent.Alignment.CENTER, h2);
         h2.setWidth("max-content");
 
-        usernameField.setLabel("Username");
+        usernameField.setLabel(getTranslation("register.username"));
         usernameField.setWidth("min-content");
 
-        nameField.setLabel("Name");
+        nameField.setLabel(getTranslation("register.name"));
         nameField.setWidth("min-content");
 
-        emailField.setLabel("Email");
+        emailField.setLabel(getTranslation("register.email"));
         emailField.setWidth("min-content");
 
-        passwordField.setLabel("Password");
+        passwordField.setLabel(getTranslation("register.password"));
         passwordField.setWidth("min-content");
 
-        passwordField2.setLabel("Password again");
+        passwordField2.setLabel(getTranslation("register.password2"));
         passwordField2.setWidth("min-content");
 
         layoutRow.setWidthFull();
@@ -88,19 +88,15 @@ public class RegisterView extends Composite<VerticalLayout> {
         layoutRow.setAlignItems(Alignment.START);
         layoutRow.setJustifyContentMode(JustifyContentMode.CENTER);
 
-        buttonSecondary.setText("Cancel");
+        buttonSecondary.setText(getTranslation("cancel"));
         buttonSecondary.setWidth("min-content");
-        buttonPrimary.setText("Register");
+        buttonPrimary.setText("register");
         buttonPrimary.setWidth("min-content");
         buttonPrimary.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         layoutRow2.addClassName(Gap.MEDIUM);
         layoutRow2.setWidth("100%");
         layoutRow2.setHeight("min-content");
-        textSmall.setText(
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
-        textSmall.setWidth("100%");
-        textSmall.getStyle().set("font-size", "var(--lumo-font-size-xs)");
 
         getContent().add(layoutColumn2);
         layoutColumn2.add(h2);
@@ -123,17 +119,17 @@ public class RegisterView extends Composite<VerticalLayout> {
             String confirmPassword = passwordField2.getValue();
 
             if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-                textSmall.setText("Please fill all required fields.");
+                textSmall.setText(getTranslation("register.pleasefill"));
                 return;
             }
 
             if (!password.equals(confirmPassword)) {
-                textSmall.setText("Passwords do not match.");
+                textSmall.setText(getTranslation("register.passwordnomatch"));
                 return;
             }
 
             if (!userService.usernameAvailable(username)) {
-                textSmall.setText("Username is already in use.");
+                textSmall.setText(getTranslation("register.usernameinuse"));
                 return;
             }
 
