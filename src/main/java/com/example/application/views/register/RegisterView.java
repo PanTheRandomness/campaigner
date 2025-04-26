@@ -2,6 +2,7 @@ package com.example.application.views.register;
 
 import com.example.application.data.Role;
 import com.example.application.data.User;
+import com.example.application.data.repositories.UserRepository;
 import com.example.application.services.UserService;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
@@ -17,14 +18,14 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.vaadin.lineawesome.LineAwesomeIconUrl;
+
+import com.example.application.util.UIRegistryWithUserGrid;
 
 import java.util.Set;
 
@@ -33,7 +34,9 @@ import java.util.Set;
 @AnonymousAllowed
 public class RegisterView extends Composite<VerticalLayout> {
 
-    public RegisterView(UserService userService, PasswordEncoder passwordEncoder) {
+    private final UserRepository userRepository;
+
+    public RegisterView(UserService userService, PasswordEncoder passwordEncoder, UserRepository userRepository) {
 
         VerticalLayout layoutColumn2 = new VerticalLayout();
         H2 h2 = new H2();
@@ -143,9 +146,17 @@ public class RegisterView extends Composite<VerticalLayout> {
             newUser.setRoles(Set.of(Role.USER));
 
             userService.save(newUser);
+
+            for (UIRegistryWithUserGrid.UIWithUserGrid uiWithUserGrid : UIRegistryWithUserGrid.getActiveUIs()) {
+                uiWithUserGrid.getUi().access(() -> {
+                    uiWithUserGrid.getUserGrid().setItems(userRepository.findAll());
+                });
+            }
+
             UI.getCurrent().navigate("login");
         });
 
         buttonSecondary.addClickListener(e -> UI.getCurrent().navigate("login"));
+        this.userRepository = userRepository;
     }
 }

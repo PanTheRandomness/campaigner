@@ -3,7 +3,9 @@ package com.example.application.views.campaigns;
 import com.example.application.data.*;
 import com.example.application.data.repositories.*;
 import com.example.application.security.AuthenticatedUser;
+import com.example.application.util.UIRegistryWithGrid;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -283,7 +285,7 @@ public class CampaignTabsBuilder {
                 eventsLayout,
                 eventForm
         );
-
+        UIRegistryWithGrid.register(UI.getCurrent(), eventGrid, campaign);
         return timelineLayout;
     }
 
@@ -486,7 +488,7 @@ public class CampaignTabsBuilder {
 
         saveButton.addClickListener(e -> {
             boolean valid = true;
-            System.out.println("Initiated save event...");
+            // System.out.println("Initiated save event...");
 
             // Validate name
             // TODO: Prevent Duplicate Events
@@ -682,7 +684,13 @@ public class CampaignTabsBuilder {
             eventRepository.save(event);
 
             // Update grid
-            eventGrid.setItems(eventRepository.findByCampaignId(campaign.getId()));
+            for (UIRegistryWithGrid.UIWithGrid uiWithGrid : UIRegistryWithGrid.getActiveUIs()) {
+                if (uiWithGrid.getCampaignId().equals(campaign.getId())) {
+                    uiWithGrid.getUi().access(() -> {
+                        uiWithGrid.getEventGrid().setItems(eventRepository.findByCampaignId(campaign.getId()));
+                    });
+                }
+            }
 
             // Clear form
             eventNameField.clear();

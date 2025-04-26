@@ -6,6 +6,7 @@ import com.example.application.data.Role;
 import com.example.application.data.repositories.UserRepository;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
@@ -30,10 +31,11 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import jakarta.annotation.security.RolesAllowed;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
+import com.example.application.util.UIRegistryWithUserGrid;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -45,14 +47,13 @@ import java.util.stream.Collectors;
 public class UsersView extends Composite<VerticalLayout> {
 
     private final UserRepository userRepository;
-    private Grid<User> userGrid;
 
     public UsersView(UserRepository userRepository) {
         this.userRepository = userRepository;
 
         // TODO: add search
         VerticalLayout layoutColumn2 = new VerticalLayout();
-        userGrid = new Grid<>(User.class, false);
+        Grid<User> userGrid = new Grid<>(User.class, false);
         HorizontalLayout layoutRow = new HorizontalLayout();
 
         getContent().setWidth("100%");
@@ -120,6 +121,8 @@ public class UsersView extends Composite<VerticalLayout> {
         // Populate user grid
         userGrid.setItems(userRepository.findAll());
 
+        UIRegistryWithUserGrid.register(UI.getCurrent(), userGrid);
+
         layoutRow.addClassName(Gap.MEDIUM);
         layoutRow.setWidth("100%");
         layoutRow.setHeight("min-content");
@@ -181,7 +184,7 @@ public class UsersView extends Composite<VerticalLayout> {
 
             userRepository.save(user);
             editDialog.close();
-            updateUserGrid();
+            pushUpdateToAllUsers();
         });
 
         Button cancelButton = new Button("Cancel", event -> editDialog.close());
@@ -214,7 +217,7 @@ public class UsersView extends Composite<VerticalLayout> {
         Button confirmButton = new Button("Yes, remove", event -> {
             userRepository.delete(user);
             removeDialog.close();
-            updateUserGrid();
+            pushUpdateToAllUsers();
         });
         confirmButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
         buttonLayout.add(confirmButton, cancelButton);
@@ -224,8 +227,11 @@ public class UsersView extends Composite<VerticalLayout> {
         removeDialog.open();
     }
 
-    private void updateUserGrid() {
-        List<User> users = userRepository.findAll();
-        userGrid.setItems(users);
+    private void pushUpdateToAllUsers() {
+        for (UIRegistryWithUserGrid.UIWithUserGrid uiWithUserGrid : UIRegistryWithUserGrid.getActiveUIs()) {
+            uiWithUserGrid.getUi().access(() -> {
+                uiWithUserGrid.getUserGrid().setItems(userRepository.findAll());
+            });
+        }
     }
 }

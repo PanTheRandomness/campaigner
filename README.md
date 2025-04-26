@@ -43,10 +43,12 @@ ________________________________________________________________________________
 <h4>Lisäpisteet: </h4>
  ✅ Työ julkaistu GIT:iin <br>
  ✅ Salasanojen suojaus Vaadin Securityn Hashauksella <br>
- ❌ Server Push <br>
+ ✅ Server Push toteutettu sovelluksessa: esim. eventGrid ja userGrid <br>
  ❌ Lokalisointi vähintään yhdellä kielellä <br>
  ❌ Työstä tehty Docker Image <br>
  ❌ Tietokannan ja sovelluksen määrittäminen Docker Composen avulla <br>
+ 
+❗Docker-toiminnallisuudet toteutan mahdollisesti vasta, kun sovellus on kokonaan/lähes valmis. Nykyisillään se kattaa vain arviointikriteerejä, mutta jatkan sen kehitystä kurssin jälkeenkin!
 
 *sis. `CRUD: Haku & Tallennus` & `Repository UI:lta taustapalvelimen kautta tietokantaan`
 

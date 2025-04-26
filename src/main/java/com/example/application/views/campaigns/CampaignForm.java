@@ -181,6 +181,7 @@ public class CampaignForm extends FormLayout {
             }
         });
 
+        // TODO: Fix bug previous players disappear from player list after adding a player in edit mode
         // Handle adding Players
         Button addPlayerButton = new Button("Add Player");
         addPlayerButton.addClickListener(e -> {
