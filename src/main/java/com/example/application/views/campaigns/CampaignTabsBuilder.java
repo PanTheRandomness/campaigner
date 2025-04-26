@@ -4,7 +4,6 @@ import com.example.application.data.*;
 import com.example.application.data.repositories.*;
 import com.example.application.security.AuthenticatedUser;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -41,6 +40,41 @@ public class CampaignTabsBuilder {
     private final PlaceRepository placeRepository;
     private final AreaRepository areaRepository;
     private final AuthenticatedUser authenticatedUser;
+
+    private Event eventBeingEdited = null;
+
+    private VerticalLayout timelineRowLayout;
+    private VerticalLayout eventsLayout;
+    private VerticalLayout eventForm;
+    private Grid<Event> eventGrid;
+    private Button addEventButton;
+
+    private TextField eventNameField;
+    private TextArea eventDescriptionField;
+    private Checkbox privateEventCheckbox;
+    private RadioButtonGroup<String> eventTypeChoice;
+    private TextField newEventTypeName;
+    private ColorPicker eventTypeColorPicker;
+    private Select<EventType> eventTypeSelect;
+    private TextField startDay;
+    private TextField startMonth;
+    private TextField startYear;
+    private TextField endDay;
+    private TextField endMonth;
+    private TextField endYear;
+    private RadioButtonGroup<String> placeChoice;
+    private TextField newPlaceName;
+    private TextArea newPlaceDescription;
+    private TextArea newPlaceHistory;
+    private Checkbox newPlacePrivate;
+    private Select<Place> placeSelect;
+    private RadioButtonGroup<String> areaChoice;
+    private TextField newAreaName;
+    private TextArea newAreaDescription;
+    private TextArea newAreaHistory;
+    private Checkbox newAreaPrivate;
+    private Select<Area> areaSelect;
+    private Select<ReoccurrenceType> reoccurrenceTypeSelect;
 
     public CampaignTabsBuilder(CampaignRepository campaignRepository, EventRepository eventRepository,
                                EventTypeRepository eventTypeRepository, UserRepository userRepository,
@@ -123,12 +157,12 @@ public class CampaignTabsBuilder {
         H3 timelineTitle = new H3("Campaign Timeline");
         Paragraph placeholderParagraph = new Paragraph("Timeline will be here, eventually.");
         Hr hr = new Hr();
-        VerticalLayout timelineRowLayout = new VerticalLayout(timelineTitle, placeholderParagraph, hr);
+        timelineRowLayout = new VerticalLayout(timelineTitle, placeholderParagraph, hr);
 
         // Event Grid
         H3 eventGridTitle = new H3("Campaign Events");
         List<Event> campaignEvents = eventRepository.findByCampaignId(campaign.getId());
-        Grid<Event> eventGrid = new Grid<>(Event.class, false);
+        eventGrid = new Grid<>(Event.class, false);
         eventGrid.setSizeFull();
         eventGrid.setAllRowsVisible(true);
         eventGrid.setWidthFull();
@@ -160,7 +194,11 @@ public class CampaignTabsBuilder {
             Button editButton = new Button("Edit");
             Button deleteButton = new Button("Delete");
             editButton.addClickListener(e -> {
-                // TODO: Add edit functionality
+                eventBeingEdited = event;
+                populateEventEditorForm(event);
+                timelineRowLayout.setVisible(false);
+                eventsLayout.setVisible(false);
+                eventForm.setVisible(true);
             });
 
             deleteButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
@@ -201,7 +239,7 @@ public class CampaignTabsBuilder {
         }).setHeader("Actions");
 
         // Add Event Button // TODO: Show only to Campaign GMs
-        Button addEventButton = new Button("Add Event");
+        addEventButton = new Button("Add Event");
 
         // Search fields
         final EventFilters[] filters = new EventFilters[1];
@@ -221,13 +259,13 @@ public class CampaignTabsBuilder {
         eventHeaderLayout.setSpacing(true);
 
         // Grid & header
-        VerticalLayout eventsLayout = new VerticalLayout(
+        eventsLayout = new VerticalLayout(
                 eventHeaderLayout,
                 eventGrid,
-                filters[0] // TODO: Check if works?
+                filters[0]
         );
 
-        VerticalLayout eventForm = eventEditorForm(campaign, eventGrid, timelineRowLayout, eventsLayout);
+        eventForm = eventEditorForm(campaign, eventGrid, timelineRowLayout, eventsLayout);
         eventForm.setVisible(false);
 
         eventsLayout.setSizeFull();
@@ -249,9 +287,51 @@ public class CampaignTabsBuilder {
         return timelineLayout;
     }
 
-    private void editEvent(Event event, VerticalLayout eventForm) {
-        // TODO: Populate edit form if editing
+    private void populateEventEditorForm(Event event) {
+        eventNameField.setValue(event.getName() != null ? event.getName() : "");
+        eventDescriptionField.setValue(event.getDescription() != null ? event.getDescription() : "");
+        privateEventCheckbox.setValue(Boolean.TRUE.equals(event.isPrivateEvent()));
+
+        // Event Type
+        if (event.getType() != null) {
+            eventTypeChoice.setValue("Select Existing Type");
+            eventTypeSelect.setValue(event.getType());
+            newEventTypeName.clear();
+            eventTypeColorPicker.setValue(event.getType().getEventColour() != null ? event.getType().getEventColour() : "#000000");
+        } else {
+            eventTypeChoice.setValue("Create New Type");
+            newEventTypeName.clear();
+            eventTypeColorPicker.setValue("#000000");
+        }
+
+        // Start date
+        startDay.setValue(String.valueOf(event.getDuration().getStartDate().getDay()));
+        startMonth.setValue(String.valueOf(event.getDuration().getStartDate().getMonth()));
+        startYear.setValue(String.valueOf(event.getDuration().getStartDate().getYear()));
+
+        // End date
+        if (event.getDuration().getEndDate() != null) {
+            endDay.setValue(String.valueOf(event.getDuration().getEndDate().getDay()));
+            endMonth.setValue(String.valueOf(event.getDuration().getEndDate().getMonth()));
+            endYear.setValue(String.valueOf(event.getDuration().getEndDate().getYear()));
+        } else {
+            endDay.clear();
+            endMonth.clear();
+            endYear.clear();
+        }
+
+        // Place
+        if (event.getPlace() != null) {
+            placeChoice.setValue("Select Existing Place");
+            placeSelect.setValue(event.getPlace());
+        } else {
+            placeChoice.setValue("Create New Place");
+        }
+
+        // Reoccurrence
+        reoccurrenceTypeSelect.setValue(event.getReoccurring());
     }
+
 
     private VerticalLayout eventEditorForm(Campaign campaign, Grid<Event> eventGrid, VerticalLayout timelineRowLayout, VerticalLayout eventsLayout) {
         Optional<User> maybeUser = authenticatedUser.get();
@@ -266,24 +346,24 @@ public class CampaignTabsBuilder {
         H3 formTitle = new H3("Event Editor");
 
         // Basic info
-        TextField eventNameField = new TextField("Event Name");
-        TextArea eventDescriptionField = new TextArea("Event Description");
-        Checkbox privateEventCheckbox = new Checkbox("Private Event?");
+        eventNameField = new TextField("Event Name");
+        eventDescriptionField = new TextArea("Event Description");
+        privateEventCheckbox = new Checkbox("Private Event?");
 
         // Event Type
-        RadioButtonGroup<String> eventTypeChoice = new RadioButtonGroup<>();
+        eventTypeChoice = new RadioButtonGroup<>();
         eventTypeChoice.setLabel("Event Type Option");
         eventTypeChoice.setItems("Create New Type", "Select Existing Type");
         eventTypeChoice.setValue("Create New Type");
 
-        Select<EventType> eventTypeSelect = new Select<>();
+        eventTypeSelect = new Select<>();
         eventTypeSelect.setLabel("Choose Existing Event Type");
         eventTypeSelect.setItemLabelGenerator(EventType::getEventTypeName);
         eventTypeSelect.setItems(eventTypeRepository.findEventTypesByCampaign(campaign));
         eventTypeSelect.setVisible(false);
 
-        TextField newEventTypeName = new TextField("New Event Type Name");
-        ColorPicker eventTypeColorPicker = new ColorPicker();
+        newEventTypeName = new TextField("New Event Type Name");
+        eventTypeColorPicker = new ColorPicker();
         eventTypeColorPicker.setLabel("Event Type Color");
         eventTypeColorPicker.addThemeVariants(ColorPickerVariant.COMPACT);
 
@@ -302,17 +382,17 @@ public class CampaignTabsBuilder {
 
         // Start Date
         HorizontalLayout startDateLayout = new HorizontalLayout();
-        TextField startDay = new TextField("Start Day");
-        TextField startMonth = new TextField("Start Month");
-        TextField startYear = new TextField("Start Year");
+        startDay = new TextField("Start Day");
+        startMonth = new TextField("Start Month");
+        startYear = new TextField("Start Year");
         startDateLayout.add(startDay, startMonth, startYear);
 
         // End Date
         // TODO: Fix Bug: have to input an end date if something has been accidentally added in end date fields and removed
         HorizontalLayout endDateLayout = new HorizontalLayout();
-        TextField endDay = new TextField("End Day");
-        TextField endMonth = new TextField("End Month");
-        TextField endYear = new TextField("End Year");
+        endDay = new TextField("End Day");
+        endMonth = new TextField("End Month");
+        endYear = new TextField("End Year");
 
         endDay.setTooltipText("Leave empty if event is still ongoing");
         endMonth.setTooltipText("Leave empty if event is ongoing");
@@ -321,38 +401,38 @@ public class CampaignTabsBuilder {
         endDateLayout.add(endDay, endMonth, endYear);
 
         // Place
-        RadioButtonGroup<String> placeChoice = new RadioButtonGroup<>();
+        placeChoice = new RadioButtonGroup<>();
         placeChoice.setLabel("Event Place Option");
         placeChoice.setItems("Create New Place", "Select Existing Place");
         placeChoice.setValue("Create New Place");
 
-        TextField newPlaceName = new TextField("New Place Name");
-        TextArea newPlaceDescription = new TextArea("New Place Description");
-        TextArea newPlaceHistory = new TextArea("New Event Place History");
-        Checkbox newPlacePrivate = new Checkbox("Private Place?");
+        newPlaceName = new TextField("New Place Name");
+        newPlaceDescription = new TextArea("New Place Description");
+        newPlaceHistory = new TextArea("New Event Place History");
+        newPlacePrivate = new Checkbox("Private Place?");
 
         List<Place> userPlaces = placeRepository.findPlacesByWorlds(worldRepository.findByCampaignsIn(campaignRepository.findByGms(loggedUser)));
 
-        Select<Place> placeSelect = new Select<>();
+        placeSelect = new Select<>();
         placeSelect.setLabel("Choose Existing Place");
         placeSelect.setItemLabelGenerator(Place::getPlaceName);
         placeSelect.setItems(userPlaces);
         placeSelect.setVisible(false);
 
         // Area
-        RadioButtonGroup<String> areaChoice = new RadioButtonGroup<>();
+        areaChoice = new RadioButtonGroup<>();
         areaChoice.setLabel("Event Area Option");
         areaChoice.setItems("Create New Area", "Select Existing Area");
         areaChoice.setValue("Create New Area");
 
-        TextField newAreaName = new TextField("New Area Name");
-        TextArea newAreaDescription = new TextArea("New Area Description");
-        TextArea newAreaHistory = new TextArea("New Area History");
-        Checkbox newAreaPrivate = new Checkbox("Private Area?");
+        newAreaName = new TextField("New Area Name");
+        newAreaDescription = new TextArea("New Area Description");
+        newAreaHistory = new TextArea("New Area History");
+        newAreaPrivate = new Checkbox("Private Area?");
 
         List<Area> userAreas = areaRepository.findByWorld(campaign.getCampaignWorld());
 
-        Select<Area> areaSelect = new Select<>();
+        areaSelect = new Select<>();
         areaSelect.setLabel("Select Existing Area");
         areaSelect.setItemLabelGenerator(Area::getAreaName);
         areaSelect.setItems(userAreas);
@@ -387,7 +467,7 @@ public class CampaignTabsBuilder {
         });
 
         // Reoccurrence type
-        Select<ReoccurrenceType> reoccurrenceTypeSelect = new Select<>();
+        reoccurrenceTypeSelect = new Select<>();
         reoccurrenceTypeSelect.setItems(ReoccurrenceType.values());
         reoccurrenceTypeSelect.setLabel("Reoccurrence Type");
 
