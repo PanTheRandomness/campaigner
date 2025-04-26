@@ -18,19 +18,19 @@ public class CustomErrorView extends VerticalLayout implements HasErrorParameter
 
     @Override
     public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<Exception> parameter) {
-        String errorMessage = "An error occurred";
+        String errorMessage = getTranslation("error.occurred");
         int statusCode = 500;
 
         if (parameter.getException() instanceof AccessDeniedException) {
-            errorMessage = "Access denied: You do not have permission to access this resource.";
+            errorMessage = getTranslation("error.denied");
             statusCode = 403;
         } else if (parameter.getException() instanceof NotFoundException) {
-            errorMessage = "Page Not Found: The resource could not be located.";
+            errorMessage = getTranslation("error.notfound");
             statusCode = 404;
         }
 
         removeAll();
-        add(new H1("Error " + statusCode));
+        add(new H1(getTranslation("error") + " " + statusCode));
         add(new Paragraph(errorMessage));
 
         return statusCode;

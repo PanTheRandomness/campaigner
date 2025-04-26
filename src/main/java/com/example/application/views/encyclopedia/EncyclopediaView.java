@@ -27,9 +27,9 @@ public class EncyclopediaView extends Composite<VerticalLayout> {
         VerticalLayout layoutColumn2 = new VerticalLayout();
         FormLayout formLayout2Col = new FormLayout();
         H2 EncyclopediaHeader = new H2("Encyclopedia");
-        H2 EditorHeader = new H2("Editor");
+        H2 EditorHeader = new H2(getTranslation("encyclopedia.editor"));
         Paragraph EncyclopediaText = new Paragraph();
-        TextArea textArea = new TextArea("Content Editor");
+        TextArea textArea = new TextArea(getTranslation("encyclopedia.content_editor"));
         HorizontalLayout layoutRow2 = new HorizontalLayout();
 
         // Style adjustments
@@ -49,12 +49,12 @@ public class EncyclopediaView extends Composite<VerticalLayout> {
         // TODO: Add form to create/edit Encyclopedia items
 
         // Configure component widths
-        EncyclopediaHeader.setText("Heading");
+        EncyclopediaHeader.setText(getTranslation("encyclopedia.header"));
         EncyclopediaHeader.setWidth("max-content");
-        EditorHeader.setText("Encyclopedia Item Editor");
+        EditorHeader.setText(getTranslation("encyclopedia.item_editor"));
         EditorHeader.setWidth("max-content");
         EncyclopediaText.setText(
-                "Here you'll find everything...");
+                getTranslation("encyclopedia.text"));
         EncyclopediaText.setWidth("100%");
         EncyclopediaText.getStyle().set("font-size", "var(--lumo-font-size-m)");
         textArea.setWidth("100%");

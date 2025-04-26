@@ -148,13 +148,13 @@ public class MainLayout extends AppLayout implements RouterLayout {
             div.add(new Icon("lumo", "dropdown"));
             div.addClassNames(LumoUtility.Display.FLEX, LumoUtility.AlignItems.CENTER, LumoUtility.Gap.SMALL);
             userName.add(div);
-            userName.getSubMenu().addItem(getTranslation("footer.signout"), e -> {
+            userName.getSubMenu().addItem(getTranslation("sign_out"), e -> {
                 authenticatedUser.logout();
             });
 
             layout.add(userMenu);
         } else {
-            Anchor loginLink = new Anchor("login",  getTranslation("footer.signin"));
+            Anchor loginLink = new Anchor("login",  getTranslation("sign_in"));
             layout.add(loginLink);
         }
 

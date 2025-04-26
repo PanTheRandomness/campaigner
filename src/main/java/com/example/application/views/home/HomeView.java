@@ -39,7 +39,7 @@ public class HomeView extends Composite<VerticalLayout> {
         mainLayout.getStyle().set("flex-grow", "1");
 
         // Title
-        H1 title = new H1("Welcome to Campaigner");
+        H1 title = new H1(getTranslation("home.title"));
         title.setWidth("max-content");
 
         // Headers and Descriptions
@@ -52,10 +52,10 @@ public class HomeView extends Composite<VerticalLayout> {
         );
 
         featureLayout.add(
-                createFeature("Manage Campaigns", "Manage all of your campaigns conveniently in one place!", "/campaigns"),
+                createFeature(getTranslation("home.manage.title"), getTranslation("home.manage.description"), "/campaigns"),
                 // TODO: Link to timeline or remove/modify
-                createFeature("Keep track of your plot with timelines", "Create new events or modify old ones. Keep track of important plot points visually.", "/timeline"),
-                createFeature("Keep notes with Encyclopedia", "Never forget key pieces information about your world's history or geography.", "/encyclopedia")
+                createFeature(getTranslation("home.timeline.title"), getTranslation("home.timeline.description"), "/timeline"),
+                createFeature(getTranslation("home.encyclopedia.title"), getTranslation("home.encyclopedia.description"), "/encyclopedia")
         );
 
         // User Status (logged in: Welcome message / logged out: buttons)
@@ -66,18 +66,18 @@ public class HomeView extends Composite<VerticalLayout> {
 
         Optional<User> maybeUser = authenticatedUser.get();
         if (maybeUser.isPresent()) {
-            Paragraph welcomeText = new Paragraph("Welcome back " + maybeUser.get().getName() + "!");
+            Paragraph welcomeText = new Paragraph(getTranslation("welcome_back") + " " + maybeUser.get().getName() + "!");
             welcomeText.getStyle().set("font-size", "var(--lumo-font-size-xl)");
             userActionLayout.add(welcomeText);
         } else {
-            Button registerButton = new Button("Register");
+            Button registerButton = new Button(getTranslation("register"));
             registerButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
             registerButton.addClickListener(e -> UI.getCurrent().navigate("register"));
 
-            Paragraph orText = new Paragraph(" or ");
+            Paragraph orText = new Paragraph(" " + getTranslation("or") + " ");
             orText.getStyle().set("font-size", "var(--lumo-font-size-xl)");
 
-            Button loginButton = new Button("Sign in");
+            Button loginButton = new Button(getTranslation("sign_in"));
             loginButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
             loginButton.addClickListener(e -> UI.getCurrent().navigate("login"));
 

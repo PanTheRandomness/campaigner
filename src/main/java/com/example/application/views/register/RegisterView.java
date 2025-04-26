@@ -40,11 +40,11 @@ public class RegisterView extends Composite<VerticalLayout> {
 
         VerticalLayout layoutColumn2 = new VerticalLayout();
         H2 h2 = new H2();
-        TextField usernameField = new TextField(getTranslation("register.username"));
+        TextField usernameField = new TextField(getTranslation("username"));
         TextField nameField = new TextField(getTranslation("register.name"));
-        EmailField emailField = new EmailField(getTranslation("register.email"));
-        PasswordField passwordField = new PasswordField(getTranslation("register.password"));
-        PasswordField passwordField2 = new PasswordField(getTranslation("register.password2"));
+        EmailField emailField = new EmailField(getTranslation("email"));
+        PasswordField passwordField = new PasswordField(getTranslation("password"));
+        PasswordField passwordField2 = new PasswordField(getTranslation("password2"));
 
         HorizontalLayout layoutRow = new HorizontalLayout();
         Button buttonSecondary = new Button();
@@ -65,19 +65,19 @@ public class RegisterView extends Composite<VerticalLayout> {
         layoutColumn2.setAlignSelf(FlexComponent.Alignment.CENTER, h2);
         h2.setWidth("max-content");
 
-        usernameField.setLabel(getTranslation("register.username"));
+        usernameField.setLabel(getTranslation("username"));
         usernameField.setWidth("min-content");
 
         nameField.setLabel(getTranslation("register.name"));
         nameField.setWidth("min-content");
 
-        emailField.setLabel(getTranslation("register.email"));
+        emailField.setLabel(getTranslation("email"));
         emailField.setWidth("min-content");
 
-        passwordField.setLabel(getTranslation("register.password"));
+        passwordField.setLabel(getTranslation("password"));
         passwordField.setWidth("min-content");
 
-        passwordField2.setLabel(getTranslation("register.password2"));
+        passwordField2.setLabel(getTranslation("password2"));
         passwordField2.setWidth("min-content");
 
         layoutRow.setWidthFull();
@@ -119,17 +119,17 @@ public class RegisterView extends Composite<VerticalLayout> {
             String confirmPassword = passwordField2.getValue();
 
             if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-                textSmall.setText(getTranslation("register.pleasefill"));
+                textSmall.setText(getTranslation("register.please_fill"));
                 return;
             }
 
             if (!password.equals(confirmPassword)) {
-                textSmall.setText(getTranslation("register.passwordnomatch"));
+                textSmall.setText(getTranslation("register.password_nomatch"));
                 return;
             }
 
             if (!userService.usernameAvailable(username)) {
-                textSmall.setText(getTranslation("register.usernameinuse"));
+                textSmall.setText(getTranslation("register.username_in_use"));
                 return;
             }
 

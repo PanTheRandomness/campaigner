@@ -99,10 +99,10 @@ public class CampaignTabsBuilder {
         pages.setSizeFull();
 
         // Create Tabs
-        Tab overviewTab = new Tab(VaadinIcon.ARCHIVE.create(), new Span("Overview"));
-        Tab timelineTab = new Tab(VaadinIcon.ROAD_BRANCHES.create(), new Span("Timelines"));
-        Tab playersTab = new Tab(VaadinIcon.USERS.create(), new Span("Players"));
-        Tab worldTab = new Tab(VaadinIcon.GLOBE.create(), new Span("World"));
+        Tab overviewTab = new Tab(VaadinIcon.ARCHIVE.create(), new Span(UI.getCurrent().getTranslation("overview")));
+        Tab timelineTab = new Tab(VaadinIcon.ROAD_BRANCHES.create(), new Span(UI.getCurrent().getTranslation("timelines")));
+        Tab playersTab = new Tab(VaadinIcon.USERS.create(), new Span(UI.getCurrent().getTranslation("players")));
+        Tab worldTab = new Tab(VaadinIcon.GLOBE.create(), new Span(UI.getCurrent().getTranslation("world")));
 
         tabs.add(overviewTab, timelineTab, playersTab, worldTab);
 
@@ -142,7 +142,7 @@ public class CampaignTabsBuilder {
         layout.setPadding(false);
         layout.setSpacing(false);
 
-        Paragraph overviewText = new Paragraph("Overview content for " + campaign.getCampaignName());
+        Paragraph overviewText = new Paragraph(UI.getCurrent().getTranslation("overview.text") + " " + campaign.getCampaignName());
         layout.add(overviewText);
 
         return layout;
@@ -156,13 +156,13 @@ public class CampaignTabsBuilder {
 
         // TODO: Timeline
         // Timeline placeholder
-        H3 timelineTitle = new H3("Campaign Timeline");
-        Paragraph placeholderParagraph = new Paragraph("Timeline will be here, eventually.");
+        H3 timelineTitle = new H3(UI.getCurrent().getTranslation("campaign.timeline.title"));
+        Paragraph placeholderParagraph = new Paragraph(UI.getCurrent().getTranslation("campaign.timeline.placeholder"));
         Hr hr = new Hr();
         timelineRowLayout = new VerticalLayout(timelineTitle, placeholderParagraph, hr);
 
         // Event Grid
-        H3 eventGridTitle = new H3("Campaign Events");
+        H3 eventGridTitle = new H3(UI.getCurrent().getTranslation("campaign.timeline.events"));
         List<Event> campaignEvents = eventRepository.findByCampaignId(campaign.getId());
         eventGrid = new Grid<>(Event.class, false);
         eventGrid.setSizeFull();
@@ -174,27 +174,27 @@ public class CampaignTabsBuilder {
         // TODO: Only show private events to GMs
         eventGrid.setItems(campaignEvents);
 
-        Div emptyState = new Div(new Paragraph("No events yet. Create your first event!"));
+        Div emptyState = new Div(new Paragraph(UI.getCurrent().getTranslation("campaign.timeline.empty")));
         emptyState.getStyle().set("padding", "1em").set("text-align", "center");
 
         eventGrid.setEmptyStateComponent(emptyState);
 
         // TODO: Manage event visibility based on event's private-attribute
-        eventGrid.addColumn(Event::getName).setHeader("Name").setAutoWidth(true).setTextAlign(ColumnTextAlign.START);
-        eventGrid.addColumn(Event::getDescription).setHeader("Description").setAutoWidth(true).setTextAlign(ColumnTextAlign.START);
+        eventGrid.addColumn(Event::getName).setHeader(UI.getCurrent().getTranslation("name")).setAutoWidth(true).setTextAlign(ColumnTextAlign.START);
+        eventGrid.addColumn(Event::getDescription).setHeader(UI.getCurrent().getTranslation("description")).setAutoWidth(true).setTextAlign(ColumnTextAlign.START);
         // TODO: Show Event Type Colour
-        eventGrid.addColumn(event -> event.getType() != null ? event.getType().getEventTypeName() : "-").setHeader("Type").setAutoWidth(true).setTextAlign(ColumnTextAlign.START);
-        eventGrid.addColumn(Event::getReoccurring).setHeader("Reoccurrence Type").setAutoWidth(true).setTextAlign(ColumnTextAlign.START);
-        eventGrid.addColumn(event -> event.getPlace() != null ? event.getPlace().getPlaceName() : "-").setHeader("Place").setAutoWidth(true).setTextAlign(ColumnTextAlign.START);
-        eventGrid.addColumn(event -> event.getDuration().getStartDate().toString()).setHeader("Start Date").setAutoWidth(true);
+        eventGrid.addColumn(event -> event.getType() != null ? event.getType().getEventTypeName() : "-").setHeader(UI.getCurrent().getTranslation("type")).setAutoWidth(true).setTextAlign(ColumnTextAlign.START);
+        eventGrid.addColumn(Event::getReoccurring).setHeader(UI.getCurrent().getTranslation("reoccurrence")).setAutoWidth(true).setTextAlign(ColumnTextAlign.START);
+        eventGrid.addColumn(event -> event.getPlace() != null ? event.getPlace().getPlaceName() : "-").setHeader(UI.getCurrent().getTranslation("place")).setAutoWidth(true).setTextAlign(ColumnTextAlign.START);
+        eventGrid.addColumn(event -> event.getDuration().getStartDate().toString()).setHeader(UI.getCurrent().getTranslation("start_date")).setAutoWidth(true);
         eventGrid.addColumn(event -> {
             CalendarDate endDate = event.getDuration().getEndDate();
             return (endDate != null) ? endDate.toString() : "-";
-        }).setHeader("End Date").setAutoWidth(true);
+        }).setHeader(UI.getCurrent().getTranslation("end_date")).setAutoWidth(true);
 
         eventGrid.addComponentColumn(event -> {
-            Button editButton = new Button("Edit");
-            Button deleteButton = new Button("Delete");
+            Button editButton = new Button(UI.getCurrent().getTranslation("edit"));
+            Button deleteButton = new Button(UI.getCurrent().getTranslation("delete"));
             editButton.addClickListener(e -> {
                 eventBeingEdited = event;
                 populateEventEditorForm(event);
@@ -206,23 +206,23 @@ public class CampaignTabsBuilder {
             deleteButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
             deleteButton.addClickListener(e -> {
                 Dialog confirmDialog = new Dialog();
-                confirmDialog.setHeaderTitle("Confirm Deletion");
+                confirmDialog.setHeaderTitle(UI.getCurrent().getTranslation("confirm_delete"));
 
                 VerticalLayout dialogLayout = new VerticalLayout(
-                        new Paragraph("Are you sure you want to delete this event: \"" + event.getName() + "\"?")
+                        new Paragraph(UI.getCurrent().getTranslation("confirm_delete.text") + "\"" + event.getName() + "\"?")
                 );
                 dialogLayout.setPadding(false);
                 dialogLayout.setSpacing(false);
                 confirmDialog.add(dialogLayout);
 
-                Button confirmButton = new Button("Delete", confirm -> {
+                Button confirmButton = new Button(UI.getCurrent().getTranslation("delete"), confirm -> {
                     eventRepository.delete(event);
                     eventGrid.setItems(eventRepository.findByCampaignId(campaign.getId()));
                     confirmDialog.close();
                 });
                 confirmButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
 
-                Button cancelButton = new Button("Cancel", cancel -> confirmDialog.close());
+                Button cancelButton = new Button(UI.getCurrent().getTranslation("cancel"), cancel -> confirmDialog.close());
 
                 HorizontalLayout buttonLayout = new HorizontalLayout(confirmButton, cancelButton);
                 confirmDialog.getFooter().add(buttonLayout);
@@ -238,10 +238,10 @@ public class CampaignTabsBuilder {
 
             HorizontalLayout actions = new HorizontalLayout(editButton, deleteButton);
             return actions;
-        }).setHeader("Actions");
+        }).setHeader(UI.getCurrent().getTranslation("actions"));
 
         // Add Event Button // TODO: Show only to Campaign GMs
-        addEventButton = new Button("Add Event");
+        addEventButton = new Button(UI.getCurrent().getTranslation("add_event"));
 
         // Search fields
         final EventFilters[] filters = new EventFilters[1];
@@ -296,12 +296,12 @@ public class CampaignTabsBuilder {
 
         // Event Type
         if (event.getType() != null) {
-            eventTypeChoice.setValue("Select Existing Type");
+            eventTypeChoice.setValue(UI.getCurrent().getTranslation("select_existing_type"));
             eventTypeSelect.setValue(event.getType());
             newEventTypeName.clear();
             eventTypeColorPicker.setValue(event.getType().getEventColour() != null ? event.getType().getEventColour() : "#000000");
         } else {
-            eventTypeChoice.setValue("Create New Type");
+            eventTypeChoice.setValue(UI.getCurrent().getTranslation("create_new_type"));
             newEventTypeName.clear();
             eventTypeColorPicker.setValue("#000000");
         }
@@ -324,10 +324,10 @@ public class CampaignTabsBuilder {
 
         // Place
         if (event.getPlace() != null) {
-            placeChoice.setValue("Select Existing Place");
+            placeChoice.setValue(UI.getCurrent().getTranslation("select_existing_place"));
             placeSelect.setValue(event.getPlace());
         } else {
-            placeChoice.setValue("Create New Place");
+            placeChoice.setValue(UI.getCurrent().getTranslation("create_new_place"));
         }
 
         // Reoccurrence
@@ -344,33 +344,33 @@ public class CampaignTabsBuilder {
         formLayout.setSpacing(false);
         formLayout.setVisible(false); // Hidden by default
 
-        H3 formTitle = new H3("Event Editor");
+        H3 formTitle = new H3(UI.getCurrent().getTranslation("event_editor"));
 
         // Basic info
-        eventNameField = new TextField("Event Name");
-        eventDescriptionField = new TextArea("Event Description");
-        privateEventCheckbox = new Checkbox("Private Event?");
+        eventNameField = new TextField(UI.getCurrent().getTranslation("event.name"));
+        eventDescriptionField = new TextArea(UI.getCurrent().getTranslation("event.description"));
+        privateEventCheckbox = new Checkbox(UI.getCurrent().getTranslation("event.private"));
 
         // Event Type
         eventTypeChoice = new RadioButtonGroup<>();
-        eventTypeChoice.setLabel("Event Type Option");
-        eventTypeChoice.setItems("Create New Type", "Select Existing Type");
-        eventTypeChoice.setValue("Create New Type");
+        eventTypeChoice.setLabel(UI.getCurrent().getTranslation("event_type"));
+        eventTypeChoice.setItems(UI.getCurrent().getTranslation("create_new_type"), UI.getCurrent().getTranslation("select_existing_type"));
+        eventTypeChoice.setValue(UI.getCurrent().getTranslation("create_new_type"));
 
         eventTypeSelect = new Select<>();
-        eventTypeSelect.setLabel("Choose Existing Event Type");
+        eventTypeSelect.setLabel(UI.getCurrent().getTranslation("select_existing_event_type"));
         eventTypeSelect.setItemLabelGenerator(EventType::getEventTypeName);
         eventTypeSelect.setItems(eventTypeRepository.findEventTypesByCampaign(campaign));
         eventTypeSelect.setVisible(false);
 
-        newEventTypeName = new TextField("New Event Type Name");
+        newEventTypeName = new TextField(UI.getCurrent().getTranslation("new_event_type_name"));
         eventTypeColorPicker = new ColorPicker();
-        eventTypeColorPicker.setLabel("Event Type Color");
+        eventTypeColorPicker.setLabel(UI.getCurrent().getTranslation("event_type_colour"));
         eventTypeColorPicker.addThemeVariants(ColorPickerVariant.COMPACT);
 
         // Toggle create new/select event type visibility
         eventTypeChoice.addValueChangeListener(event -> {
-            boolean isCreateNew = "Create New Type".equals(eventTypeChoice.getValue());
+            boolean isCreateNew = UI.getCurrent().getTranslation("create_new_type").equals(eventTypeChoice.getValue());
             newEventTypeName.setVisible(isCreateNew);
             eventTypeColorPicker.setVisible(isCreateNew);
             eventTypeSelect.setVisible(!isCreateNew);
@@ -383,64 +383,65 @@ public class CampaignTabsBuilder {
 
         // Start Date
         HorizontalLayout startDateLayout = new HorizontalLayout();
-        startDay = new TextField("Start Day");
-        startMonth = new TextField("Start Month");
-        startYear = new TextField("Start Year");
+        startDay = new TextField(UI.getCurrent().getTranslation("start_day"));
+        startMonth = new TextField(UI.getCurrent().getTranslation("start_month"));
+        startYear = new TextField(UI.getCurrent().getTranslation("start_year"));
         startDateLayout.add(startDay, startMonth, startYear);
 
         // End Date
         // TODO: Fix Bug: have to input an end date if something has been accidentally added in end date fields and removed
         HorizontalLayout endDateLayout = new HorizontalLayout();
-        endDay = new TextField("End Day");
-        endMonth = new TextField("End Month");
-        endYear = new TextField("End Year");
+        endDay = new TextField(UI.getCurrent().getTranslation("end_day"));
+        endMonth = new TextField(UI.getCurrent().getTranslation("end_month"));
+        endYear = new TextField(UI.getCurrent().getTranslation("end_year"));
 
-        endDay.setTooltipText("Leave empty if event is still ongoing");
-        endMonth.setTooltipText("Leave empty if event is ongoing");
-        endYear.setTooltipText("Leave empty if event is ongoing");
+        endDay.setTooltipText(UI.getCurrent().getTranslation("end.leave_empty"));
+        endMonth.setTooltipText(UI.getCurrent().getTranslation("end.leave_empty"));
+        endYear.setTooltipText(UI.getCurrent().getTranslation("end.leave_empty"));
 
         endDateLayout.add(endDay, endMonth, endYear);
 
         // Place
         placeChoice = new RadioButtonGroup<>();
-        placeChoice.setLabel("Event Place Option");
-        placeChoice.setItems("Create New Place", "Select Existing Place");
-        placeChoice.setValue("Create New Place");
+        placeChoice.setLabel(UI.getCurrent().getTranslation("event.place"));
+        placeChoice.setItems(UI.getCurrent().getTranslation("create_new_place"), UI.getCurrent().getTranslation("select_existing_place"));
+        placeChoice.setValue(UI.getCurrent().getTranslation("create_new_place"));
 
-        newPlaceName = new TextField("New Place Name");
-        newPlaceDescription = new TextArea("New Place Description");
-        newPlaceHistory = new TextArea("New Event Place History");
-        newPlacePrivate = new Checkbox("Private Place?");
+        newPlaceName = new TextField(UI.getCurrent().getTranslation("place.name"));
+        newPlaceDescription = new TextArea(UI.getCurrent().getTranslation("place.description"));
+        newPlaceHistory = new TextArea(UI.getCurrent().getTranslation("place.history"));
+        newPlacePrivate = new Checkbox(UI.getCurrent().getTranslation("place.private"));
 
         List<Place> userPlaces = placeRepository.findPlacesByWorlds(worldRepository.findByCampaignsIn(campaignRepository.findByGms(loggedUser)));
 
         placeSelect = new Select<>();
-        placeSelect.setLabel("Choose Existing Place");
+        placeSelect.setLabel(UI.getCurrent().getTranslation("select_existing_place"));
         placeSelect.setItemLabelGenerator(Place::getPlaceName);
         placeSelect.setItems(userPlaces);
         placeSelect.setVisible(false);
 
         // Area
+        // TODO: Fix Bug: Localization un-sets radio button group value
         areaChoice = new RadioButtonGroup<>();
-        areaChoice.setLabel("Event Area Option");
-        areaChoice.setItems("Create New Area", "Select Existing Area");
-        areaChoice.setValue("Create New Area");
+        areaChoice.setLabel(UI.getCurrent().getTranslation("event_area"));
+        areaChoice.setItems(UI.getCurrent().getTranslation("create_new_area"), UI.getCurrent().getTranslation("select_existing_area"));
+        areaChoice.setValue(UI.getCurrent().getTranslation("event_area"));
 
-        newAreaName = new TextField("New Area Name");
-        newAreaDescription = new TextArea("New Area Description");
-        newAreaHistory = new TextArea("New Area History");
-        newAreaPrivate = new Checkbox("Private Area?");
+        newAreaName = new TextField(UI.getCurrent().getTranslation("area.name"));
+        newAreaDescription = new TextArea(UI.getCurrent().getTranslation("area.description"));
+        newAreaHistory = new TextArea(UI.getCurrent().getTranslation("area.history"));
+        newAreaPrivate = new Checkbox(UI.getCurrent().getTranslation("area.private"));
 
         List<Area> userAreas = areaRepository.findByWorld(campaign.getCampaignWorld());
 
         areaSelect = new Select<>();
-        areaSelect.setLabel("Select Existing Area");
+        areaSelect.setLabel(UI.getCurrent().getTranslation("select_existing_area"));
         areaSelect.setItemLabelGenerator(Area::getAreaName);
         areaSelect.setItems(userAreas);
         areaSelect.setVisible(false);
 
         placeChoice.addValueChangeListener(event -> {
-            boolean isCreatingNew = "Create New Place".equals(placeChoice.getValue());
+            boolean isCreatingNew = UI.getCurrent().getTranslation("create_new_place").equals(placeChoice.getValue());
             newPlaceName.setVisible(isCreatingNew);
             newPlaceDescription.setVisible(isCreatingNew);
             newPlaceHistory.setVisible(isCreatingNew);
@@ -453,13 +454,13 @@ public class CampaignTabsBuilder {
             newAreaDescription.setVisible(isCreatingNew);
             newAreaHistory.setVisible(isCreatingNew);
             newAreaPrivate.setVisible(isCreatingNew);
-            if (placeChoice.getValue().equals("Create New Place")) {
+            if (placeChoice.getValue().equals(UI.getCurrent().getTranslation("create_new_place"))) {
                 areaSelect.setVisible(isCreatingNew); // TODO: Hide this after select place -> create place
             }
         });
 
         areaChoice.addValueChangeListener(event -> {
-            boolean isCreatingNew = "Create New Area".equals(areaChoice.getValue());
+            boolean isCreatingNew = UI.getCurrent().getTranslation("event_area").equals(areaChoice.getValue());
             newAreaName.setVisible(isCreatingNew);
             newAreaDescription.setVisible(isCreatingNew);
             newAreaHistory.setVisible(isCreatingNew);
@@ -470,11 +471,13 @@ public class CampaignTabsBuilder {
         // Reoccurrence type
         reoccurrenceTypeSelect = new Select<>();
         reoccurrenceTypeSelect.setItems(ReoccurrenceType.values());
-        reoccurrenceTypeSelect.setLabel("Reoccurrence Type");
+        // TODO: Bug Fix: Label Localization gets error 500
+        // reoccurrenceTypeSelect.setItemLabelGenerator(type -> UI.getCurrent().getTranslation("reoccurrence." + type.name().toLowerCase()));
+        reoccurrenceTypeSelect.setLabel(UI.getCurrent().getTranslation("reoccurrence"));
 
         // Editor Buttons
-        Button saveButton = new Button("Save Event");
-        Button cancelButton = new Button("Cancel");
+        Button saveButton = new Button(UI.getCurrent().getTranslation("save_event"));
+        Button cancelButton = new Button(UI.getCurrent().getTranslation("cancel"));
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         HorizontalLayout buttonLayout = new HorizontalLayout(saveButton, cancelButton);
@@ -494,31 +497,31 @@ public class CampaignTabsBuilder {
             // TODO: Prevent Duplicate Events
             if (eventNameField.getValue().trim().isEmpty()) {
                 eventNameField.setInvalid(true);
-                eventNameField.setErrorMessage("Please enter a new name for event.");
+                eventNameField.setErrorMessage(UI.getCurrent().getTranslation("event.missing_name"));
                 valid = false;
             } else {
                 eventNameField.setInvalid(false);
             }
 
             // Validate Event Type
-            if ("Create New Type".equals(eventTypeChoice.getValue()) && newEventTypeName.getValue().trim().isEmpty()) {
+            if (UI.getCurrent().getTranslation("create_new_type").equals(eventTypeChoice.getValue()) && newEventTypeName.getValue().trim().isEmpty()) {
                 newEventTypeName.setInvalid(true);
-                newEventTypeName.setErrorMessage("Please enter a name for new event type.");
+                newEventTypeName.setErrorMessage(UI.getCurrent().getTranslation("event.missing_event_type_name"));
                 valid = false;
-            } else if ("Select Existing Type".equals(eventTypeChoice.getValue()) && eventTypeSelect.getValue() == null) {
+            } else if (UI.getCurrent().getTranslation("select_existing_type").equals(eventTypeChoice.getValue()) && eventTypeSelect.getValue() == null) {
                 eventTypeSelect.setInvalid(true);
-                eventTypeSelect.setErrorMessage("Please select an event type.");
+                eventTypeSelect.setErrorMessage(UI.getCurrent().getTranslation("event.missing_event_type"));
                 valid = false;
-            } else if ("Create New Type".equals(eventTypeChoice.getValue()) && eventTypeColorPicker.getValue() == null) {
+            } else if (UI.getCurrent().getTranslation("create_new_type").equals(eventTypeChoice.getValue()) && eventTypeColorPicker.getValue() == null) {
                 eventTypeColorPicker.setInvalid(true);
-                eventTypeColorPicker.setErrorMessage("Please select a colour for new event type."); // TODO: Fix error message not showing
+                eventTypeColorPicker.setErrorMessage(UI.getCurrent().getTranslation("event.missing_event_type_colour")); // TODO: Fix error message not showing
                 valid = false;
-            } else if ("Create New Type".equals(eventTypeChoice.getValue()) && eventTypeRepository
+            } else if (UI.getCurrent().getTranslation("create_new_type").equals(eventTypeChoice.getValue()) && eventTypeRepository
                     .findEventTypesByCampaign(campaign)
                     .stream()
                     .anyMatch(eventType -> eventType.getEventTypeName().equalsIgnoreCase(newEventTypeName.getValue().trim()))) {
                 newEventTypeName.setInvalid(true);
-                newEventTypeName.setErrorMessage("This Event Type already exists in this campaign.");
+                newEventTypeName.setErrorMessage(UI.getCurrent().getTranslation("event.event_type_already_exists"));
                 valid = false;
             } else {
                 newEventTypeName.setInvalid(false);
@@ -529,11 +532,11 @@ public class CampaignTabsBuilder {
             // Validate Event Start Date
             if (startDay.getValue().trim().isEmpty() || !isNumeric(startDay.getValue())) {
                 startDay.setInvalid(true);
-                startDay.setErrorMessage("Please enter a valid start day for event.");
+                startDay.setErrorMessage(UI.getCurrent().getTranslation("event.invalid_start_day"));
                 valid = false;
             } else if (Integer.parseInt(startDay.getValue()) < 1 || Integer.parseInt(startDay.getValue()) > campaign.getCalendar().getDaysInMonth()) {
                 startDay.setInvalid(true);
-                startDay.setErrorMessage("The day you have selected falls outside the scope of this campaign's calendar.");
+                startDay.setErrorMessage(UI.getCurrent().getTranslation("event.day_overflow"));
                 valid = false;
             } else {
                 startDay.setInvalid(false);
@@ -541,11 +544,11 @@ public class CampaignTabsBuilder {
 
             if (startMonth.getValue().trim().isEmpty() || !isNumeric(startMonth.getValue())) {
                 startMonth.setInvalid(true);
-                startMonth.setErrorMessage("Please enter a valid start month for event.");
+                startMonth.setErrorMessage(UI.getCurrent().getTranslation("event.invalid_start_month"));
                 valid = false;
             } else if (Integer.parseInt(startMonth.getValue()) < 1 || Integer.parseInt(startMonth.getValue()) > campaign.getCalendar().getMonthsInYear()) {
                 startMonth.setInvalid(true);
-                startMonth.setErrorMessage("The month you have selected falls outside the scope of this campaign's calendar.");
+                startMonth.setErrorMessage(UI.getCurrent().getTranslation("event.month_overflow"));
                 valid = false;
             } else {
                 startMonth.setInvalid(false);
@@ -554,7 +557,7 @@ public class CampaignTabsBuilder {
             // NOTE! Event year CAN BE negative
             if (startYear.getValue().trim().isEmpty() || !isNumeric(startYear.getValue())) {
                 startYear.setInvalid(true);
-                startYear.setErrorMessage("Please enter a valid start year for event.");
+                startYear.setErrorMessage(UI.getCurrent().getTranslation("event.invalid_start_year"));
                 valid = false;
             } else {
                 startYear.setInvalid(false);
@@ -565,11 +568,11 @@ public class CampaignTabsBuilder {
                 // If end date has been given
                 if (endDay.getValue().trim().isEmpty() || !isNumeric(endDay.getValue())) {
                     endDay.setInvalid(true);
-                    endDay.setErrorMessage("Please enter a valid end day for event.");
+                    endDay.setErrorMessage(UI.getCurrent().getTranslation("event.invalid_end_day"));
                     valid = false;
                 } else if (Integer.parseInt(endDay.getValue()) < 1 || Integer.parseInt(endDay.getValue()) > campaign.getCalendar().getDaysInMonth()) {
                     endDay.setInvalid(true);
-                    endDay.setErrorMessage("The day you have selected falls outside the scope of this campaign's calendar.");
+                    endDay.setErrorMessage(UI.getCurrent().getTranslation("event.day_overflow"));
                     valid = false;
                 } else {
                     endDay.setInvalid(false);
@@ -577,11 +580,11 @@ public class CampaignTabsBuilder {
 
                 if (endMonth.getValue().trim().isEmpty() || !isNumeric(endMonth.getValue())) {
                     endMonth.setInvalid(true);
-                    endMonth.setErrorMessage("Please enter a valid end month for event.");
+                    endMonth.setErrorMessage(UI.getCurrent().getTranslation("event.invalid_end_month"));
                     valid = false;
                 } else if (Integer.parseInt(endMonth.getValue()) < 1 || Integer.parseInt(endMonth.getValue()) > campaign.getCalendar().getMonthsInYear()) {
                     endMonth.setInvalid(true);
-                    endMonth.setErrorMessage("The month you have selected falls outside the scope of this campaign's calendar.");
+                    endMonth.setErrorMessage(UI.getCurrent().getTranslation("event.month_overflow"));
                     valid = false;
                 } else {
                     endMonth.setInvalid(false);
@@ -590,7 +593,7 @@ public class CampaignTabsBuilder {
                 // NOTE! Event year CAN BE negative
                 if (endYear.getValue().trim().isEmpty() || !isNumeric(endYear.getValue())) {
                     endYear.setInvalid(true);
-                    endYear.setErrorMessage("Please enter a valid end year for event.");
+                    endYear.setErrorMessage(UI.getCurrent().getTranslation("event.invalid_end_year"));
                     valid = false;
                 } else {
                     endYear.setInvalid(false);
@@ -598,18 +601,18 @@ public class CampaignTabsBuilder {
 
                 if (Integer.parseInt(endYear.getValue()) < Integer.parseInt(startYear.getValue())) {
                     endYear.setInvalid(true);
-                    endYear.setErrorMessage("Event end year cannot end before its start year.");
+                    endYear.setErrorMessage(UI.getCurrent().getTranslation("event.end_year_before_start"));
                     valid = false;
                 } else if (Integer.parseInt(endYear.getValue()) == Integer.parseInt(startYear.getValue())
                         && Integer.parseInt(endMonth.getValue()) < Integer.parseInt(startMonth.getValue())) {
                     endMonth.setInvalid(true);
-                    endMonth.setErrorMessage("Event end month cannot end before its start year.");
+                    endMonth.setErrorMessage(UI.getCurrent().getTranslation("event.end_month_before_start"));
                     valid = false;
                 } else if (Integer.parseInt(endYear.getValue()) == Integer.parseInt(startYear.getValue())
                         && Integer.parseInt(endMonth.getValue()) == Integer.parseInt(startMonth.getValue())
                         && Integer.parseInt(endDay.getValue()) < Integer.parseInt(startDay.getValue())) {
                     endDay.setInvalid(true);
-                    endDay.setErrorMessage("Event end day cannot end before its start day");
+                    endDay.setErrorMessage(UI.getCurrent().getTranslation("event.end_day_before_start"));
                     valid = false;
                 } else {
                     endYear.setInvalid(false);
@@ -619,20 +622,20 @@ public class CampaignTabsBuilder {
             }
 
             // Validate Event Place (name/existing)
-            if ("Create New Place".equals(placeChoice.getValue()) && newPlaceName.getValue().trim().isEmpty()) {
+        if (UI.getCurrent().getTranslation("create_new_place").equals(placeChoice.getValue()) && newPlaceName.getValue().trim().isEmpty()) {
                 newPlaceName.setInvalid(true);
-                newPlaceName.setErrorMessage("Please enter a place name.");
+                newPlaceName.setErrorMessage(UI.getCurrent().getTranslation("event.missing_place_name"));
                 valid = false;
-            } else if ("Select Existing Place".equals(placeChoice.getValue()) && placeSelect.getValue() == null) {
+            } else if (UI.getCurrent().getTranslation("select_existing_place").equals(placeChoice.getValue()) && placeSelect.getValue() == null) {
                 placeSelect.setInvalid(true);
-                placeSelect.setErrorMessage("Please select a place.");
+                placeSelect.setErrorMessage(UI.getCurrent().getTranslation("event.missing_place"));
                 valid = false;
-            } else if ("Create New Place".equals(placeChoice.getValue()) && placeRepository
+            } else if (UI.getCurrent().getTranslation("create_new_place").equals(placeChoice.getValue()) && placeRepository
                     .findPlaceByWorld(campaign.getCampaignWorld())
                     .stream()
                     .anyMatch(place -> place.getPlaceName().equalsIgnoreCase(newPlaceName.getValue().trim()))) {
                 newPlaceName.setInvalid(true);
-                newPlaceName.setErrorMessage("Place already exists in this campaign's world.");
+                newPlaceName.setErrorMessage(UI.getCurrent().getTranslation("event.place_already_exists"));
                 valid = false;
             } else {
                 newPlaceName.setInvalid(false);
@@ -640,20 +643,20 @@ public class CampaignTabsBuilder {
             }
 
             // Validate Event Place Area (if new Place) (name/existing)
-            if ("Create New Place".equals(placeChoice.getValue()) && "Create New Area".equals(areaChoice.getValue()) && newAreaName.getValue().trim().isEmpty()) {
+            if (UI.getCurrent().getTranslation("create_new_place").equals(placeChoice.getValue()) && UI.getCurrent().getTranslation("create_new_area").equals(areaChoice.getValue()) && newAreaName.getValue().trim().isEmpty()) {
                 newAreaName.setInvalid(true);
-                newAreaName.setErrorMessage("Please enter a name for area.");
+                newAreaName.setErrorMessage(UI.getCurrent().getTranslation("event.missing_area_name"));
                 valid = false;
-            } else if ("Create New Place".equals(placeChoice.getValue()) && "Select Existing Area".equals(areaChoice.getValue()) && areaSelect.getValue() == null) {
+            } else if (UI.getCurrent().getTranslation("create_new_place").equals(placeChoice.getValue()) && UI.getCurrent().getTranslation("select_existing_area").equals(areaChoice.getValue()) && areaSelect.getValue() == null) {
                 areaSelect.setInvalid(true);
-                areaSelect.setErrorMessage("Please select a place.");
+                areaSelect.setErrorMessage(UI.getCurrent().getTranslation("event.missing_area"));
                 valid = false;
-            } else if ("Create New Place".equals(placeChoice.getValue()) && "Create New Area".equals(areaChoice.getValue()) && areaRepository
+            } else if (UI.getCurrent().getTranslation("create_new_place").equals(placeChoice.getValue()) && UI.getCurrent().getTranslation("create_new_area").equals(areaChoice.getValue()) && areaRepository
                     .findByWorld(campaign.getCampaignWorld())
                     .stream()
                     .anyMatch(area -> area.getAreaName().equalsIgnoreCase(newAreaName.getValue().trim()))) {
                 newAreaName.setInvalid(true);
-                newAreaName.setErrorMessage("Area already exists in this campaign's world.");
+                newAreaName.setErrorMessage(UI.getCurrent().getTranslation("event.area_already_exists"));
                 valid = false;
             } else {
                 newAreaName.setInvalid(false);
@@ -663,7 +666,7 @@ public class CampaignTabsBuilder {
             // Validate Reoccurrence Type
             if (reoccurrenceTypeSelect.getValue() == null) {
                 reoccurrenceTypeSelect.setInvalid(true);
-                reoccurrenceTypeSelect.setErrorMessage("Please select a reoccurrence type.");
+                reoccurrenceTypeSelect.setErrorMessage(UI.getCurrent().getTranslation("event.missing_reoccurrence"));
                 valid = false;
             } else {
                 reoccurrenceTypeSelect.setInvalid(false);
@@ -742,7 +745,7 @@ public class CampaignTabsBuilder {
         event.setCampaign(campaign);
 
         // Event Type
-        if ("Create New Type".equals(eventTypeChoice.getValue())) {
+        if (UI.getCurrent().getTranslation("create_new_type").equals(eventTypeChoice.getValue())) {
             EventType newType = new EventType();
             newType.setEventTypeName(newEventTypeName.getValue().trim());
             newType.setEventColour(eventTypeColorPicker.getValue()); // TODO: Fix Bug: Now allowing black (black = null)
@@ -754,7 +757,7 @@ public class CampaignTabsBuilder {
 
         // Area
         Area area = null;
-        if ("Create New Place".equals(placeChoice.getValue()) && "Create New Area".equals(areaChoice.getValue())) {
+        if (UI.getCurrent().getTranslation("create_new_place").equals(placeChoice.getValue()) && UI.getCurrent().getTranslation("create_new_area").equals(areaChoice.getValue())) {
             area = new Area();
             area.setAreaName(newAreaName.getValue().trim());
             area.setAreaDescription(newAreaDescription.getValue().trim());
@@ -762,13 +765,13 @@ public class CampaignTabsBuilder {
             area.setPrivateArea(newAreaPrivate.getValue());
             area.setWorld(campaign.getCampaignWorld());
             areaRepository.save(area);
-        } else if ("Create New Place".equals(placeChoice.getValue()) && "Select Existing Area".equals(areaChoice.getValue())) {
+        } else if (UI.getCurrent().getTranslation("create_new_type").equals(placeChoice.getValue()) && UI.getCurrent().getTranslation("select_existing_area").equals(areaChoice.getValue())) {
             area = areaSelect.getValue();
         }
 
         // Place
         Place place;
-        if ("Create New Place".equals(placeChoice.getValue())) {
+        if (UI.getCurrent().getTranslation("create_new_type").equals(placeChoice.getValue())) {
             place = new Place();
             place.setPlaceName(newPlaceName.getValue().trim());
             place.setPlaceDescription(newPlaceDescription.getValue().trim());
@@ -828,7 +831,7 @@ public class CampaignTabsBuilder {
         layout.setPadding(false);
         layout.setSpacing(false);
 
-        H3 title = new H3(campaign.getCampaignName() + "'s GMs & Players");
+        H3 title = new H3(campaign.getCampaignName() + UI.getCurrent().getTranslation("players.title"));
 
         Grid<User> playerGrid = new Grid<>(User.class, false);
         playerGrid.setSizeFull();
@@ -838,11 +841,11 @@ public class CampaignTabsBuilder {
 
         Map<User, String> roleMap = new LinkedHashMap<>();
         gms.forEach(gm -> roleMap.put(gm, "GM"));
-        players.forEach(player -> roleMap.put(player, "Player"));
+        players.forEach(player -> roleMap.put(player, UI.getCurrent().getTranslation("player")));
 
-        playerGrid.addColumn(User::getUsername).setHeader("Username");
-        playerGrid.addColumn(User::getName).setHeader("Name");
-        playerGrid.addColumn(user -> roleMap.get(user)).setHeader("Role");
+        playerGrid.addColumn(User::getUsername).setHeader(UI.getCurrent().getTranslation("username"));
+        playerGrid.addColumn(User::getName).setHeader(UI.getCurrent().getTranslation("name"));
+        playerGrid.addColumn(user -> roleMap.get(user)).setHeader(UI.getCurrent().getTranslation("role"));
 
         playerGrid.setItems(roleMap.keySet());
 
@@ -856,8 +859,8 @@ public class CampaignTabsBuilder {
         layout.setPadding(false);
         layout.setSpacing(false);
 
-        H3 title = new H3(campaign.getCampaignName() + "'s World");
-        Div placeholder = new Div(new Paragraph("The world will eventually be here!"));
+        H3 title = new H3(campaign.getCampaignName() + UI.getCurrent().getTranslation("world.title"));
+        Div placeholder = new Div(new Paragraph(UI.getCurrent().getTranslation("world.placeholder")));
 
         layout.add(title, placeholder);
         return layout;

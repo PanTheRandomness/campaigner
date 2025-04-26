@@ -26,24 +26,24 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class CampaignForm extends FormLayout {
-    private final TextField nameField = new TextField("Campaign Name");
-    private final TextArea descriptionField = new TextArea("Campaign Description");
-    private final TextField gmField = new TextField("Enter GM Username");
+    private final TextField nameField = new TextField(getTranslation("campaign_name"));
+    private final TextArea descriptionField = new TextArea(getTranslation("campaign_description"));
+    private final TextField gmField = new TextField(getTranslation("enter_gm"));
     private final VirtualList<User> currentGmsField = new VirtualList<>();
-    private final TextField playerField = new TextField("Enter Player Username");
+    private final TextField playerField = new TextField(getTranslation("enter_player"));
     private final VirtualList<User> currentPlayersField = new VirtualList<>();
-    private final ComboBox<World> worldSelector = new ComboBox<>("Select World");
-    private final ComboBox<Calendar> calendarSelector = new ComboBox<>("Select Calendar");
+    private final ComboBox<World> worldSelector = new ComboBox<>(getTranslation("select_world"));
+    private final ComboBox<Calendar> calendarSelector = new ComboBox<>(getTranslation("select_calendar"));
 
     // New fields for creating a new world and calendar
-    private final TextField newWorldField = new TextField("New World Name");
-    private final TextField newCalendarField = new TextField("New Calendar Name");
-    private final TextField monthsInYearField = new TextField("Months in Year");
-    private final TextField daysInMonthField = new TextField("Days in Month");
-    private final TextField daysInWeekField = new TextField("Days in Week");
-    private final TextField moonCountField = new TextField("Number of Moons");
-    private final TextArea monthNamesField = new TextArea("Month Names (comma-separated)");
-    private final TextArea weekdayNamesField = new TextArea("Weekday Names (comma-separated)");
+    private final TextField newWorldField = new TextField(getTranslation("new_world_name"));
+    private final TextField newCalendarField = new TextField(getTranslation("new_calendar_name"));
+    private final TextField monthsInYearField = new TextField(getTranslation("months_in_year"));
+    private final TextField daysInMonthField = new TextField(getTranslation("days_in_month"));
+    private final TextField daysInWeekField = new TextField(getTranslation("days_in_week"));
+    private final TextField moonCountField = new TextField(getTranslation("moon_count"));
+    private final TextArea monthNamesField = new TextArea(getTranslation("month_names"));
+    private final TextArea weekdayNamesField = new TextArea(getTranslation("weekday_names"));
     private final List<VerticalLayout> moonFields = new ArrayList<>();
 
     private final RadioButtonGroup<String> worldChoiceGroup = new RadioButtonGroup<>();
@@ -89,23 +89,23 @@ public class CampaignForm extends FormLayout {
         newCalendarField.setVisible(true);
 
         // Set up the RadioButtonGroups for selecting existing or creating new
-        worldChoiceGroup.setLabel("Choose World");
-        worldChoiceGroup.setItems("Create New", "Select Existing");
-        worldChoiceGroup.setValue("Create New");
+        worldChoiceGroup.setLabel(getTranslation("select_world"));
+        worldChoiceGroup.setItems(getTranslation("create_new"), getTranslation("select_existing"));
+        worldChoiceGroup.setValue(getTranslation("create_new"));
         worldChoiceGroup.addValueChangeListener(event -> updateWorldFields(event.getValue()));
 
-        calendarChoiceGroup.setLabel("Choose Calendar");
-        calendarChoiceGroup.setItems("Create New", "Select Existing");
+        calendarChoiceGroup.setLabel(getTranslation("select_calendar"));
+        calendarChoiceGroup.setItems(getTranslation("create_new"), getTranslation("select_existing"));
         calendarChoiceGroup.addValueChangeListener(event -> updateCalendarFields(event.getValue()));
 
         worldSelector.setItems(userWorlds);
         worldSelector.setItemLabelGenerator(World::getWorldName);
         calendarSelector.setItems(userCalendars);
-        calendarChoiceGroup.setValue("Create New");
+        calendarChoiceGroup.setValue(getTranslation("create_new"));
         calendarSelector.setItemLabelGenerator(Calendar::getCalendarName);
         // TODO: Add donjon calendar json-compatibility
 
-        Button saveButton = new Button("Save");
+        Button saveButton = new Button(getTranslation("save"));
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         saveButton.addClickListener(event -> saveCampaign());
 
@@ -122,7 +122,7 @@ public class CampaignForm extends FormLayout {
 
             // Cannot delete creating user from GM list
             if (!user.getId().equals(loggedInUser.getId())) {
-                Button remove = new Button("Remove GM", e -> {
+                Button remove = new Button(getTranslation("remove_gm"), e -> {
                     selectedGms.remove(user);
                     currentGmsField.setItems(selectedGms);
                 });
@@ -136,7 +136,7 @@ public class CampaignForm extends FormLayout {
         currentPlayersField.setRenderer(new ComponentRenderer<>(user -> {
             HorizontalLayout layout = new HorizontalLayout();
             Span name = new Span(user.getUsername());
-            Button remove = new Button("Remove Player", e -> {
+            Button remove = new Button(getTranslation("remove_player"), e -> {
                 selectedPlayers.remove(user);
                 currentPlayersField.setItems(selectedPlayers);
             });
@@ -157,22 +157,22 @@ public class CampaignForm extends FormLayout {
         playerListLayout.setPadding(false);
         playerListLayout.setSpacing(false);
 
-        Details gmDetails = new Details("Current GMs", gmListLayout);
+        Details gmDetails = new Details(getTranslation("current_gms"), gmListLayout);
         gmDetails.setOpened(true);
 
-        Details playerDetails = new Details("Current Players", playerListLayout);
+        Details playerDetails = new Details(getTranslation("current_players"), playerListLayout);
         playerDetails.setOpened(true);
 
         // Handle adding GMs
-        Button addGmButton = new Button("Add GM");
+        Button addGmButton = new Button(getTranslation("add_gm"));
         addGmButton.addClickListener(e -> {
             User found = userRepository.findByUsername(gmField.getValue().trim()).orElse(null);
             if (found == null) {
                 gmField.setInvalid(true);
-                gmField.setErrorMessage("User not found.");
+                gmField.setErrorMessage(getTranslation("user.not_found"));
             } else if (selectedGms.contains(found)) {
                 gmField.setInvalid(true);
-                gmField.setErrorMessage("User is already a GM.");
+                gmField.setErrorMessage(getTranslation("user.already_gm"));
             } else {
                 selectedGms.add(found);
                 currentGmsField.setItems(selectedGms);
@@ -183,18 +183,18 @@ public class CampaignForm extends FormLayout {
 
         // TODO: Fix bug previous players disappear from player list after adding a player in edit mode
         // Handle adding Players
-        Button addPlayerButton = new Button("Add Player");
+        Button addPlayerButton = new Button(getTranslation("add_player"));
         addPlayerButton.addClickListener(e -> {
             User found = userRepository.findByUsername(playerField.getValue().trim()).orElse(null);
             if (found == null) {
                 playerField.setInvalid(true);
-                playerField.setErrorMessage("User not found.");
+                playerField.setErrorMessage(getTranslation("user.not_found"));
             } else if (selectedGms.contains(found)) {
                 playerField.setInvalid(true);
-                playerField.setErrorMessage("User is already a GM.");
+                playerField.setErrorMessage(getTranslation("user.already_gm"));
             } else if (selectedPlayers.contains(found)) {
                 playerField.setInvalid(true);
-                playerField.setErrorMessage("User is already a Player.");
+                playerField.setErrorMessage(getTranslation("user.already_player"));
             } else {
                 selectedPlayers.add(found);
                 currentPlayersField.setItems(selectedPlayers);
@@ -223,7 +223,7 @@ public class CampaignForm extends FormLayout {
         });
 
         // Add components to the form
-        H2 title = new H2("Campaign Info");
+        H2 title = new H2(getTranslation("campaign_info"));
         add(
                 title,
                 nameField, descriptionField,
@@ -243,20 +243,20 @@ public class CampaignForm extends FormLayout {
         // Validate campaign name
         if (nameField.getValue().trim().isEmpty()) {
             nameField.setInvalid(true);
-            nameField.setErrorMessage("Campaign name cannot be empty.");
+            nameField.setErrorMessage(getTranslation("campaign.missing_name"));
             isValid = false;
         } else {
             nameField.setInvalid(false);
         }
 
         // Validate world selection
-        if ("Create New".equals(worldChoiceGroup.getValue()) && newWorldField.getValue().trim().isEmpty()) {
+        if (getTranslation("create_new").equals(worldChoiceGroup.getValue()) && newWorldField.getValue().trim().isEmpty()) {
             newWorldField.setInvalid(true);
-            newWorldField.setErrorMessage("Please enter a new world name.");
+            newWorldField.setErrorMessage(getTranslation("campaign.missing_world_name"));
             isValid = false;
-        } else if ("Select Existing".equals(worldChoiceGroup.getValue()) && worldSelector.getValue() == null) {
+        } else if (getTranslation("select_existing").equals(worldChoiceGroup.getValue()) && worldSelector.getValue() == null) {
             worldSelector.setInvalid(true);
-            worldSelector.setErrorMessage("Please select a world.");
+            worldSelector.setErrorMessage(getTranslation("campaign.missing_world"));
             isValid = false;
         } else {
             newWorldField.setInvalid(false);
@@ -264,13 +264,13 @@ public class CampaignForm extends FormLayout {
         }
 
         // Validate calendar selection
-        if ("Create New".equals(calendarChoiceGroup.getValue()) && newCalendarField.getValue().trim().isEmpty()) {
+        if (getTranslation("create_new").equals(calendarChoiceGroup.getValue()) && newCalendarField.getValue().trim().isEmpty()) {
             newCalendarField.setInvalid(true);
-            newCalendarField.setErrorMessage("Please enter a new calendar name.");
+            newCalendarField.setErrorMessage(getTranslation("campaign.missing_calendar_name"));
             isValid = false;
-        } else if ("Select Existing".equals(calendarChoiceGroup.getValue()) && calendarSelector.getValue() == null) {
+        } else if (getTranslation("select_existing").equals(calendarChoiceGroup.getValue()) && calendarSelector.getValue() == null) {
             calendarSelector.setInvalid(true);
-            calendarSelector.setErrorMessage("Please select a calendar.");
+            calendarSelector.setErrorMessage(getTranslation("campaign.missing_calendar"));
             isValid = false;
         } else {
             newCalendarField.setInvalid(false);
@@ -278,7 +278,7 @@ public class CampaignForm extends FormLayout {
         }
 
         // Validate months, days and names if a new calendar is being created
-        if ("Create New".equals(calendarChoiceGroup.getValue())) {
+        if (getTranslation("create_new").equals(calendarChoiceGroup.getValue())) {
             int monthsInYear = Integer.parseInt(monthsInYearField.getValue());
             int daysInWeek = Integer.parseInt(daysInWeekField.getValue());
             List<String> monthNames = List.of(monthNamesField.getValue().split(","));
@@ -287,7 +287,7 @@ public class CampaignForm extends FormLayout {
             // Validate monthsInYear vs monthNames
             if (monthsInYear != monthNames.size()) {
                 monthsInYearField.setInvalid(true);
-                monthsInYearField.setErrorMessage("Months in year must match the number of month names.");
+                monthsInYearField.setErrorMessage(getTranslation("campaign.month_count_names_nomatch"));
                 isValid = false;
             } else {
                 monthsInYearField.setInvalid(false);
@@ -296,7 +296,7 @@ public class CampaignForm extends FormLayout {
             // Validate daysInWeek vs weekdayNames
             if (daysInWeek != weekdayNames.size()) {
                 daysInWeekField.setInvalid(true);
-                daysInWeekField.setErrorMessage("Days in week must match the number of weekday names.");
+                daysInWeekField.setErrorMessage(getTranslation("campaign.weekday_count_names_nomatch"));
                 isValid = false;
             } else {
                 daysInWeekField.setInvalid(false);
@@ -304,12 +304,12 @@ public class CampaignForm extends FormLayout {
         }
 
         // Validate moons if a new calendar is being created
-        if ("Create New".equals(calendarChoiceGroup.getValue())) {
+        if (getTranslation("create_new").equals(calendarChoiceGroup.getValue())) {
             for (VerticalLayout moonLayout : moonFields) {
                 TextField moonNameField = (TextField) moonLayout.getChildren().findFirst().orElse(null);
                 if (moonNameField != null && moonNameField.getValue().trim().isEmpty()) {
                     moonNameField.setInvalid(true);
-                    moonNameField.setErrorMessage("Moon name cannot be empty.");
+                    moonNameField.setErrorMessage(getTranslation("campaign.missing_moon_name"));
                     isValid = false;
                 } else {
                     assert moonNameField != null;
@@ -344,7 +344,7 @@ public class CampaignForm extends FormLayout {
     // Handle World creation or selection
     private World handleWorldSelection() {
         World selectedWorld;
-        if ("Create New".equals(worldChoiceGroup.getValue())) {
+        if (getTranslation("create_new").equals(worldChoiceGroup.getValue())) {
             String newWorldName = newWorldField.getValue().trim();
             selectedWorld = new World();
             selectedWorld.setWorldName(newWorldName);
@@ -358,7 +358,7 @@ public class CampaignForm extends FormLayout {
     // Handle Calendar creation or selection
     private Calendar handleCalendarSelection() {
         Calendar selectedCalendar;
-        if ("Create New".equals(calendarChoiceGroup.getValue())) {
+        if (getTranslation("create_new").equals(calendarChoiceGroup.getValue())) {
             selectedCalendar = new Calendar();
             selectedCalendar.setCalendarName(newCalendarField.getValue().trim());
             selectedCalendar.setMonthsInYear(Integer.parseInt(monthsInYearField.getValue()));
@@ -398,13 +398,13 @@ public class CampaignForm extends FormLayout {
 
 
     private void updateWorldFields(String choice) {
-        boolean isCreateNew = "Create New".equals(choice);
+        boolean isCreateNew = getTranslation("create_new").equals(choice);
         worldSelector.setVisible(!isCreateNew);
         newWorldField.setVisible(isCreateNew);
     }
 
     private void updateCalendarFields(String choice) {
-        boolean isCreateNew = "Create New".equals(choice);
+        boolean isCreateNew = getTranslation("create_new").equals(choice);
         calendarSelector.setVisible(!isCreateNew);
         newCalendarField.setVisible(isCreateNew);
         calendarSelector.setVisible(!isCreateNew);
@@ -418,7 +418,7 @@ public class CampaignForm extends FormLayout {
 
     private void addMoonFields() {
         VerticalLayout moonLayout = new VerticalLayout();
-        moonLayout.add(new TextField("Moon Name"), new TextField("Cycle"), new TextField("Shift"));
+        moonLayout.add(new TextField(getTranslation("moon_name")), new TextField(getTranslation("cycle")), new TextField(getTranslation("shift")));
         moonFields.add(moonLayout);
         add(moonLayout);
     }
@@ -436,20 +436,20 @@ public class CampaignForm extends FormLayout {
         // World
         World world = campaign.getCampaignWorld();
         if (worldRepository.findById(world.getId()).isPresent()) {
-            worldChoiceGroup.setValue("Select Existing");
+            worldChoiceGroup.setValue(getTranslation("select_existing"));
             worldSelector.setValue(world);
         } else {
-            worldChoiceGroup.setValue("Create New");
+            worldChoiceGroup.setValue(getTranslation("create_new"));
             newWorldField.setValue(world.getWorldName());
         }
 
         // Calendar
         Calendar calendar = campaign.getCalendar();
         if (calendarRepository.findById(calendar.getId()).isPresent()) {
-            calendarChoiceGroup.setValue("Select Existing");
+            calendarChoiceGroup.setValue(getTranslation("select_existing"));
             calendarSelector.setValue(calendar);
         } else {
-            calendarChoiceGroup.setValue("Create New");
+            calendarChoiceGroup.setValue(getTranslation("create_new"));
             newCalendarField.setValue(calendar.getCalendarName());
 
             monthsInYearField.setValue(String.valueOf(calendar.getMonthsInYear()));
@@ -464,13 +464,13 @@ public class CampaignForm extends FormLayout {
             moonFields.clear();
 
             for (Moon moon : moons) {
-                TextField moonName = new TextField("Moon Name");
+                TextField moonName = new TextField(getTranslation("moon_name"));
                 moonName.setValue(moon.getMoonName());
 
-                TextField cycle = new TextField("Cycle");
+                TextField cycle = new TextField(getTranslation("cycle"));
                 cycle.setValue(String.valueOf(moon.getCycle()));
 
-                TextField shift = new TextField("Shift");
+                TextField shift = new TextField(getTranslation("shift"));
                 shift.setValue(String.valueOf(moon.getShift()));
 
                 VerticalLayout moonLayout = new VerticalLayout(moonName, cycle, shift);

@@ -86,9 +86,9 @@ public class CampaignsView extends Composite<VerticalLayout> {
         this.authenticatedUser = authenticatedUser;
 
         HorizontalLayout layoutRow = new HorizontalLayout();
-        Button createButton = new Button("Create New");
-        Button editButton = new Button("Edit");
-        Button deleteButton = new Button("Delete");
+        Button createButton = new Button(getTranslation("create_new"));
+        Button editButton = new Button(getTranslation("edit"));
+        Button deleteButton = new Button(getTranslation("delete"));
         deleteButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
 
         getContent().setSpacing(false);
@@ -101,7 +101,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         layoutRow.setAlignItems(FlexComponent.Alignment.CENTER);
         layoutRow.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
 
-        campaignSelect.setLabel("Select Campaign");
+        campaignSelect.setLabel(getTranslation("select_campaign"));
         campaignSelect.setWidth("min-content");
 
         createButton.setWidth("min-content");
@@ -186,7 +186,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         tabs.removeAll();
         pages.removeAll();
 
-        Tab overviewTab = new Tab("Overview");
+        Tab overviewTab = new Tab(getTranslation("overview"));
         tabs.add(overviewTab);
         tabs.setSelectedTab(overviewTab);
         VerticalLayout messageLayout = new VerticalLayout();
@@ -194,7 +194,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
         messageLayout.setPadding(true);
         messageLayout.setHeightFull();
 
-        Paragraph message = new Paragraph("You are not yet participating in any campaigns.");
+        Paragraph message = new Paragraph(getTranslation("no_campaigns"));
         messageLayout.add(message);
         messageLayout.setAlignItems(FlexComponent.Alignment.START);
 
@@ -270,7 +270,7 @@ public class CampaignsView extends Composite<VerticalLayout> {
     }
 
     private void confirmAndDeleteCampaign(Campaign campaign) {
-        UI.getCurrent().getPage().executeJs("return confirm('Are you sure you want to delete this campaign?');")
+        UI.getCurrent().getPage().executeJs("return confirm(" + getTranslation("campaign.remove_confirm") + ");")
                 .then(Boolean.class, confirmDelete -> {
                     if (Boolean.TRUE.equals(confirmDelete)) {
                         campaignRepository.delete(campaign);

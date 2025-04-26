@@ -68,31 +68,31 @@ public class UsersView extends Composite<VerticalLayout> {
         userGrid.getStyle().set("font-size", "var(--lumo-font-size-l)");
 
         userGrid.addColumn(User::getUsername)
-                .setHeader("Username")
+                .setHeader(getTranslation("username"))
                 .setAutoWidth(true)
                 .setTextAlign(ColumnTextAlign.START);
 
         userGrid.addColumn(User::getName)
-                .setHeader("Name")
+                .setHeader(getTranslation("name"))
                 .setAutoWidth(true)
                 .setTextAlign(ColumnTextAlign.START);
 
         userGrid.addColumn(User::getEmail)
-                .setHeader("Email")
+                .setHeader(getTranslation("email"))
                 .setAutoWidth(true)
                 .setTextAlign(ColumnTextAlign.START);
 
         userGrid.addColumn(user -> user.getGmCampaigns().stream()
                         .map(Campaign::getCampaignName)
                         .collect(Collectors.joining(", ")))
-                .setHeader("GM Campaigns")
+                .setHeader(getTranslation("gm_campaigns"))
                 .setAutoWidth(true)
                 .setTextAlign(ColumnTextAlign.START);
 
         userGrid.addColumn(user -> user.getPlayerCampaigns().stream()
                         .map(Campaign::getCampaignName)
                         .collect(Collectors.joining(", ")))
-                .setHeader("Player Campaigns")
+                .setHeader(getTranslation("player_campaigns"))
                 .setAutoWidth(true)
                 .setTextAlign(ColumnTextAlign.START);
 
@@ -100,18 +100,18 @@ public class UsersView extends Composite<VerticalLayout> {
         userGrid.addColumn(user -> user.getRoles().stream()
                         .map(Enum::name)
                         .collect(Collectors.joining(", ")))
-                .setHeader("Roles")
+                .setHeader(getTranslation("roles"))
                 .setAutoWidth(true)
                 .setTextAlign(ColumnTextAlign.START);
 
         userGrid.addComponentColumn(user -> {
-            Button editButton = new Button("Edit", event -> openEditDialog(user));
+            Button editButton = new Button(getTranslation("edit"), event -> openEditDialog(user));
             editButton.getStyle().set("margin-right", "8px");
 
-            Button removeButton = new Button("Remove", event -> openRemoveDialog(user));
+            Button removeButton = new Button(getTranslation("remove"), event -> openRemoveDialog(user));
             removeButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
             return new Div(editButton, removeButton);
-        }).setHeader("Actions");
+        }).setHeader(getTranslation("actions"));
 
         userGrid.addThemeVariants(
                 GridVariant.LUMO_ROW_STRIPES,
@@ -135,20 +135,20 @@ public class UsersView extends Composite<VerticalLayout> {
 
     private void openEditDialog(User user) {
         Dialog editDialog = new Dialog();
-        editDialog.setHeaderTitle("Edit User");
+        editDialog.setHeaderTitle(getTranslation("edituser"));
         editDialog.setWidth("400px");
 
-        TextField usernameField = new TextField("Username");
+        TextField usernameField = new TextField(getTranslation("username"));
         usernameField.setValue(user.getUsername() != null ? user.getUsername() : "");
 
-        TextField nameField = new TextField("Name");
+        TextField nameField = new TextField(getTranslation("name"));
         nameField.setValue(user.getName() != null ? user.getName() : "");
 
-        TextField emailField = new TextField("Email");
+        TextField emailField = new TextField(getTranslation("email"));
         emailField.setValue(user.getEmail() != null ? user.getEmail() : "");
 
         CheckboxGroup<Role> rolesGroup = new CheckboxGroup<>();
-        rolesGroup.setLabel("Roles");
+        rolesGroup.setLabel(getTranslation("roles"));
         rolesGroup.setItems(Role.values());
         rolesGroup.setValue(user.getRoles() != null ? user.getRoles() : Set.of());
 
@@ -176,7 +176,7 @@ public class UsersView extends Composite<VerticalLayout> {
             }
         });
 
-        Button saveButton = new Button("Save", event -> {
+        Button saveButton = new Button(getTranslation("save"), event -> {
             user.setUsername(usernameField.getValue());
             user.setName(nameField.getValue());
             user.setEmail(emailField.getValue());
@@ -187,7 +187,7 @@ public class UsersView extends Composite<VerticalLayout> {
             pushUpdateToAllUsers();
         });
 
-        Button cancelButton = new Button("Cancel", event -> editDialog.close());
+        Button cancelButton = new Button(getTranslation("cancel"), event -> editDialog.close());
 
         HorizontalLayout buttonLayout = new HorizontalLayout(saveButton, cancelButton);
         buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
@@ -209,12 +209,12 @@ public class UsersView extends Composite<VerticalLayout> {
     private void openRemoveDialog(User user) {
         Dialog removeDialog = new Dialog();
 
-        Text confirmationText = new Text("Are you sure you want to remove this user?");
+        Text confirmationText = new Text(getTranslation("removeuser.confirmation"));
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
 
-        Button cancelButton = new Button("Cancel", event -> removeDialog.close());
-        Button confirmButton = new Button("Yes, remove", event -> {
+        Button cancelButton = new Button(getTranslation("calcel"), event -> removeDialog.close());
+        Button confirmButton = new Button(getTranslation("removeuser.yes"), event -> {
             userRepository.delete(user);
             removeDialog.close();
             pushUpdateToAllUsers();

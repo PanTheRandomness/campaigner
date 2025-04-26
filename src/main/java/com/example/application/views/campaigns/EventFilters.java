@@ -2,6 +2,7 @@ package com.example.application.views.campaigns;
 
 import com.example.application.data.Event;
 import com.example.application.data.ReoccurrenceType;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -17,40 +18,41 @@ import java.util.List;
 public class EventFilters extends VerticalLayout implements Specification<Event> {
 
     private final Long campaignId;
-    private TextField nameField = new TextField("Name");
-    private TextField placeField = new TextField("Place");
-    private TextField areaField = new TextField("Area");
-    private TextField typeField = new TextField("Event Type");
+    private TextField nameField = new TextField(getTranslation("name"));
+    private TextField placeField = new TextField(getTranslation("place"));
+    private TextField areaField = new TextField(getTranslation("area"));
+    private TextField typeField = new TextField(getTranslation("event_type"));
     private Select<ReoccurrenceType> reoccurrenceTypeSelect = new Select<>();
-    private TextField startDay = new TextField("Start day");
-    private TextField startMonth = new TextField("Start month");
-    private TextField startYear = new TextField("Start year");
+    private TextField startDay = new TextField(getTranslation("start_day"));
+    private TextField startMonth = new TextField(getTranslation("start_month"));
+    private TextField startYear = new TextField(getTranslation("start_year"));
     private TextField between = new TextField(" - ");
-    private TextField endDay = new TextField("End day");
-    private TextField endMonth = new TextField("End month");
-    private TextField endYear = new TextField("End year");
+    private TextField endDay = new TextField(getTranslation("end_day"));
+    private TextField endMonth = new TextField(getTranslation("end_month"));
+    private TextField endYear = new TextField(getTranslation("end_year"));
 
-    private Button searchButton = new Button("Search");
-    private Button clearButton = new Button("Clear");
+    private Button searchButton = new Button(getTranslation("search"));
+    private Button clearButton = new Button(getTranslation("clear"));
 
     public EventFilters(Long campaignId, Runnable onSearch) {
         this.campaignId = campaignId;
 
-        nameField.setPlaceholder("Search events by name...");
+        nameField.setPlaceholder(getTranslation("search_by_name"));
         nameField.setClearButtonVisible(true);
 
-        placeField.setPlaceholder("Search events by place...");
+        placeField.setPlaceholder(getTranslation("search_by_place"));
         placeField.setClearButtonVisible(true);
 
-        areaField.setPlaceholder("Search events by area...");
+        areaField.setPlaceholder(getTranslation("search_by_area"));
         areaField.setClearButtonVisible(true);
 
-        typeField.setPlaceholder("Search events by type...");
+        typeField.setPlaceholder(getTranslation("search_by_type"));
         typeField.setClearButtonVisible(true);
 
-        reoccurrenceTypeSelect.setPlaceholder("Search events by reoccurrence...");
-        reoccurrenceTypeSelect.setLabel("Reoccurrence Type");
+        reoccurrenceTypeSelect.setPlaceholder(getTranslation("search_by_reoccurrence"));
+        reoccurrenceTypeSelect.setLabel(getTranslation("reoccurrence"));
         reoccurrenceTypeSelect.setEmptySelectionAllowed(true);
+        // reoccurrenceTypeSelect.setItemLabelGenerator(type -> UI.getCurrent().getTranslation("reoccurrence." + type.name().toLowerCase()));
         reoccurrenceTypeSelect.setItems(ReoccurrenceType.values());
 
         startDay.setClearButtonVisible(true);
