@@ -8,17 +8,15 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.server.Command;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class EventFilters extends VerticalLayout implements Specification<Event> {
 
+    private final Long campaignId;
     private TextField nameField = new TextField("Name");
     private TextField placeField = new TextField("Place");
     private TextField areaField = new TextField("Area");
@@ -35,10 +33,9 @@ public class EventFilters extends VerticalLayout implements Specification<Event>
     private Button searchButton = new Button("Search");
     private Button clearButton = new Button("Clear");
 
-    private Timer debounceTimer;
-    private final int debounceDelay = 300;
+    public EventFilters(Long campaignId, Runnable onSearch) {
+        this.campaignId = campaignId;
 
-    public EventFilters(Runnable onSearch) {
         nameField.setPlaceholder("Search events by name...");
         nameField.setClearButtonVisible(true);
 
@@ -76,7 +73,7 @@ public class EventFilters extends VerticalLayout implements Specification<Event>
 
         searchButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        searchButton.addClickListener(e -> debounceSearch(onSearch));
+        searchButton.addClickListener(e -> onSearch.run());
         clearButton.addClickListener(e -> {
             nameField.clear();
             placeField.clear();
@@ -107,11 +104,16 @@ public class EventFilters extends VerticalLayout implements Specification<Event>
     public Predicate toPredicate(Root<Event> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
         List<Predicate> predicates = new ArrayList<>();
 
+        predicates.add(cb.equal(root.get("campaign").get("id"), campaignId));
+
         if (!nameField.isEmpty()) {
             predicates.add(cb.like(cb.lower(root.get("name")), "%" + nameField.getValue().toLowerCase() + "%"));
         }
         if (!placeField.isEmpty()) {
             predicates.add(cb.like(cb.lower(root.join("place").get("placeName")), "%" + placeField.getValue().toLowerCase() + "%"));
+        }
+        if (!areaField.isEmpty()) {
+            predicates.add(cb.like(cb.lower(root.join("place").join("area").get("areaName")), "%" + areaField.getValue().toLowerCase() + "%"));
         }
         if (!typeField.isEmpty()) {
             predicates.add(cb.like(cb.lower(root.join("type").get("eventTypeName")), "%" + typeField.getValue().toLowerCase() + "%"));
@@ -120,20 +122,7 @@ public class EventFilters extends VerticalLayout implements Specification<Event>
             predicates.add(cb.equal(root.get("reoccurring"), reoccurrenceTypeSelect.getValue()));
         }
 
+        System.out.println(predicates);
         return cb.and(predicates.toArray(new Predicate[0]));
     }
-
-    private void debounceSearch(Runnable onSearch) {
-        if (debounceTimer != null) {
-            debounceTimer.cancel();
-        }
-        debounceTimer = new Timer();
-        debounceTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                getUI().ifPresent(ui -> ui.access((Command) onSearch));
-            }
-        }, debounceDelay);
-    }
-
 }

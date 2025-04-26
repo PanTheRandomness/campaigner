@@ -238,6 +238,7 @@ public class CampaignForm extends FormLayout {
     private void saveCampaign() {
         boolean isValid = true;
 
+        // TODO: Validate with binders?
         // Validate campaign name
         if (nameField.getValue().trim().isEmpty()) {
             nameField.setInvalid(true);

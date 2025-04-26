@@ -206,8 +206,9 @@ public class CampaignTabsBuilder {
         // Search fields
         final EventFilters[] filters = new EventFilters[1];
 
-        filters[0] = new EventFilters(() -> {
-            eventGrid.setItems(eventRepository.findAll(filters[0]));
+        filters[0] = new EventFilters(campaign.getId(), () -> {
+            List<Event> events = eventRepository.findAll(filters[0]);
+            eventGrid.setItems(events);
         });
 
         // Title & add button

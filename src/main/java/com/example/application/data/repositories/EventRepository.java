@@ -10,5 +10,6 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
 
     List<Event> findByCampaignId(Long campaignId);
 
+    // Leftover
     List<Event> findByCampaignIdAndNameContainingIgnoreCase(Long campaignId, String name);
 }

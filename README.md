@@ -1,10 +1,54 @@
 # Campaigner
 
-<b>Campaigner is a tool for managing D&D (and other TTRPG) campaigns, timelines and worlds.</b>
+Campaigner is a tool for managing D&D (and other TTRPGs) campaigns, timelines and worlds.
 __________________________________________________________________________________________________
 
-This project can be used as a starting point to create your own Vaadin application with Spring Boot.
-It contains all the necessary configuration and some placeholder files to get you started.
+<h3>Arviointikriteerit: </h3>
+<h4>Arvosana 1</h4>
+✅ Yksi entiteetti*: `Event` <br>
+✅ Yksinkertainen suodatus yhdelle sarakkeelle: `Events: name` <br>
+✅ Globaalien tyylien muuttaminen <br>
+✅ SPA-sovellus, jossa on päänäkymä <br>
+✅ Security-palikan käyttöönotto <br>
+
+<h4>Arvosana 2</h4>
+✅ Toinen entiteetti*, jolle edelliselle toteutettuna `1-1`-relaatio: `EventDuration` <br>
+✅ Yksinkertainen suodatus kahden tai useamman sarakkeen mukaan: `Events: name, place` <br>
+✅ Tyylien muokkaaminen suoraan yksittäiselle komponentille <br>
+✅ Header <br>
+✅ Sisäänkirjautumissivun luominen <br>
+
+<h4>Arvosana 3</h4>
+✅ Kolmas entiteetti*, sille vähintään toteutettuna `1-m`-relaatio: `Campaign` <br>
+✅ Suodatus relaatiossa olevan entiteetin osalta: `Events: area` <br>
+✅ Tyylien muokkaaminen näkymässä yksittäiselle komponentille <br>
+✅ Toimiva navigointipalkki <br>
+✅ Käyttäjäentiteetin luominen ja roolien määrittäminen (Admin/user) <br>
+
+<h4>Arvosana 4</h4>
+✅ Neljäs entiteetti* ja toteutus `m-m`-relaatiosta: `User: Campaign (GM), Campaign (player)` <br>
+✅ Tee vielä yksi hakuehto suodattimeen: `Events: EventType` <br>
+✅ Vaihda käyttöön eri Lumo Utility luokkia <br>
+✅ Footer <br>
+✅ Toteuta: - Kaikki käyttäjät näkevät päänäkymän: `Home` - User ja Admin käyttäjät näkevät jonkun sivun: `Campaigns` - Sivu pelkästään ADMIN käyttäjille: `Users` <br>
+
+<h4>Arvosana 5</h4>
+❌ Kaikille edellä oleville myös muokkaus ja poisto: Puuttuu: `Campaign-muokkaus`, `EventDuration-muokkaus` <br>
+✅ Tee vielä viides hakuehto suodattimeen: `Events: ReoccurrenceType` <br>
+✅ Kustomoidun tyylitiedoston lisääminen ja sen käyttäminen luokkamäärittelyllä: `campaigner-custom.css` <br>
+✅ Selkeästi erityyppisiä sisältösivuja vähintään kolme kappaletta: Edelliset pitää toimia näiden kanssa <br>
+❌ Kustomoitu virheviesti jos user yrittää admin-sivulle <br>
+
+
+<h4>Lisäpisteet: </h4>
+ ✅ Työ julkaistu GIT:iin <br>
+ ✅ Salasanojen suojaus Vaadin Securityn Hashauksella <br>
+ ❌ Server Push <br>
+ ❌ Lokalisointi vähintään yhdellä kielellä <br>
+ ❌ Työstä tehty Docker Image <br>
+ ❌ Tietokannan ja sovelluksen määrittäminen Docker Composen avulla <br>
+
+*sis. `CRUD: Haku & Tallennus` & `Repository UI:lta taustapalvelimen kautta tietokantaan`
 
 ## Running the application
 
