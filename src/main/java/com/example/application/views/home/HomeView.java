@@ -53,7 +53,7 @@ public class HomeView extends Composite<VerticalLayout> {
 
         featureLayout.add(
                 createFeature("Manage Campaigns", "Manage all of your campaigns conveniently in one place!", "/campaigns"),
-                // TODO: Link to timeline
+                // TODO: Link to timeline or remove/modify
                 createFeature("Keep track of your plot with timelines", "Create new events or modify old ones. Keep track of important plot points visually.", "/timeline"),
                 createFeature("Keep notes with Encyclopedia", "Never forget key pieces information about your world's history or geography.", "/encyclopedia")
         );
