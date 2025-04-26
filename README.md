@@ -33,7 +33,7 @@ ________________________________________________________________________________
 ✅ Toteuta: - Kaikki käyttäjät näkevät päänäkymän: `Home` - User ja Admin käyttäjät näkevät jonkun sivun: `Campaigns` - Sivu pelkästään ADMIN käyttäjille: `Users` <br>
 
 <h4>Arvosana 5</h4>
-❌ Kaikille edellä oleville myös muokkaus ja poisto: Puuttuu: `Campaign-muokkaus`, `EventDuration-muokkaus` <br>
+❌ Kaikille edellä oleville myös muokkaus ja poisto: Puuttuu: `EventDuration-muokkaus` <br>
 ✅ Tee vielä viides hakuehto suodattimeen: `Events: ReoccurrenceType` <br>
 ✅ Kustomoidun tyylitiedoston lisääminen ja sen käyttäminen luokkamäärittelyllä: `campaigner-custom.css` <br>
 ✅ Selkeästi erityyppisiä sisältösivuja vähintään kolme kappaletta: Edelliset pitää toimia näiden kanssa <br>

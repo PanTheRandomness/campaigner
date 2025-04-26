@@ -481,16 +481,21 @@ public class CampaignTabsBuilder {
             formLayout.setVisible(false);
             timelineRowLayout.setVisible(true);
             eventsLayout.setVisible(true);
+            eventBeingEdited = null;
         });
 
         saveButton.addClickListener(e -> {
             boolean valid = true;
+            System.out.println("Initiated save event...");
 
             // Validate name
+            // TODO: Prevent Duplicate Events
             if (eventNameField.getValue().trim().isEmpty()) {
                 eventNameField.setInvalid(true);
                 eventNameField.setErrorMessage("Please enter a new name for event.");
                 valid = false;
+            } else {
+                eventNameField.setInvalid(false);
             }
 
             // Validate Event Type
@@ -502,7 +507,7 @@ public class CampaignTabsBuilder {
                 eventTypeSelect.setInvalid(true);
                 eventTypeSelect.setErrorMessage("Please select an event type.");
                 valid = false;
-            } else if ("Select Existing Type".equals(eventTypeChoice.getValue()) && eventTypeColorPicker.getValue() == null) {
+            } else if ("Create New Type".equals(eventTypeChoice.getValue()) && eventTypeColorPicker.getValue() == null) {
                 eventTypeColorPicker.setInvalid(true);
                 eventTypeColorPicker.setErrorMessage("Please select a colour for new event type."); // TODO: Fix error message not showing
                 valid = false;
@@ -664,79 +669,16 @@ public class CampaignTabsBuilder {
 
             if (!valid) return;
 
-            Event event = new Event();
-            event.setName(eventNameField.getValue().trim());
-            event.setDescription(eventDescriptionField.getValue().trim());
-            event.setPrivateEvent(privateEventCheckbox.getValue());
-            event.setCampaign(campaign);
-
-            // Event Type
-            if ("Create New Type".equals(eventTypeChoice.getValue())) {
-                EventType newType = new EventType();
-                newType.setEventTypeName(newEventTypeName.getValue().trim());
-                newType.setEventColour(eventTypeColorPicker.getValue());
-                eventTypeRepository.save(newType);
-                event.setType(newType);
+            Event event;
+            if (eventBeingEdited == null) {
+                event = new Event();
+                event.setCampaign(campaign);
             } else {
-                event.setType(eventTypeSelect.getValue());
+                event = eventBeingEdited;
             }
 
-            // Area
-            Area area = null;
-            if ("Create New Place".equals(placeChoice.getValue()) && "Create New Area".equals(areaChoice.getValue())) {
-                area = new Area();
-                area.setAreaName(newAreaName.getValue().trim());
-                area.setAreaDescription(newAreaDescription.getValue().trim());
-                area.setAreaHistory(newAreaHistory.getValue().trim());
-                area.setPrivateArea(newAreaPrivate.getValue());
-                area.setWorld(campaign.getCampaignWorld());
-                areaRepository.save(area);
-            } else if ("Create New Place".equals(placeChoice.getValue()) && "Select Existing Area".equals(areaChoice.getValue())) {
-                area = areaSelect.getValue();
-            }
+            populateEventFromForm(event, campaign);
 
-            // Place
-            Place place;
-            if ("Create New Place".equals(placeChoice.getValue())) {
-                place = new Place();
-                place.setPlaceName(newPlaceName.getValue().trim());
-                place.setPlaceDescription(newPlaceDescription.getValue().trim());
-                place.setArea(area);
-                place.setPlaceHistory(newPlaceHistory.getValue().trim());
-                place.setPrivatePlace(newPlacePrivate.getValue());
-                placeRepository.save(place);
-            } else {
-                place = placeSelect.getValue();
-            }
-            event.setPlace(place);
-
-            // Dates
-            EventDuration duration = new EventDuration();
-            duration.setStartDate(new CalendarDate(
-                    Integer.parseInt(startYear.getValue()),
-                    Integer.parseInt(startMonth.getValue()),
-                    Integer.parseInt(startDay.getValue())
-            ));
-
-            if (!endDay.isEmpty() && !endMonth.isEmpty() && !endYear.isEmpty()) {
-                duration.setEndDate(new CalendarDate(
-                        Integer.parseInt(endYear.getValue()),
-                        Integer.parseInt(endMonth.getValue()),
-                        Integer.parseInt(endDay.getValue())
-                ));
-            }
-
-            duration.setDuration(
-                    duration.calculateDuration(
-                            duration.getStartDate(), duration.getEndDate(), campaign.getCalendar()
-                    )
-            );
-            event.setDuration(duration);
-
-            // Reoccurrence
-            event.setReoccurring(reoccurrenceTypeSelect.getValue());
-
-            // TODO: Logic for updating existing event
             eventRepository.save(event);
 
             // Update grid
@@ -763,6 +705,9 @@ public class CampaignTabsBuilder {
             areaSelect.clear();
             reoccurrenceTypeSelect.clear();
 
+            // Reset edited event id
+            eventBeingEdited = null;
+
             formLayout.setVisible(false);
             timelineRowLayout.setVisible(true);
             eventsLayout.setVisible(true);
@@ -780,6 +725,81 @@ public class CampaignTabsBuilder {
         );
 
         return formLayout;
+    }
+
+    private void populateEventFromForm (Event event, Campaign campaign) {
+        event.setName(eventNameField.getValue().trim());
+        event.setDescription(eventDescriptionField.getValue().trim());
+        event.setPrivateEvent(privateEventCheckbox.getValue());
+        event.setCampaign(campaign);
+
+        // Event Type
+        if ("Create New Type".equals(eventTypeChoice.getValue())) {
+            EventType newType = new EventType();
+            newType.setEventTypeName(newEventTypeName.getValue().trim());
+            newType.setEventColour(eventTypeColorPicker.getValue()); // TODO: Fix Bug: Now allowing black (black = null)
+            eventTypeRepository.save(newType);
+            event.setType(newType);
+        } else {
+            event.setType(eventTypeSelect.getValue());
+        }
+
+        // Area
+        Area area = null;
+        if ("Create New Place".equals(placeChoice.getValue()) && "Create New Area".equals(areaChoice.getValue())) {
+            area = new Area();
+            area.setAreaName(newAreaName.getValue().trim());
+            area.setAreaDescription(newAreaDescription.getValue().trim());
+            area.setAreaHistory(newAreaHistory.getValue().trim());
+            area.setPrivateArea(newAreaPrivate.getValue());
+            area.setWorld(campaign.getCampaignWorld());
+            areaRepository.save(area);
+        } else if ("Create New Place".equals(placeChoice.getValue()) && "Select Existing Area".equals(areaChoice.getValue())) {
+            area = areaSelect.getValue();
+        }
+
+        // Place
+        Place place;
+        if ("Create New Place".equals(placeChoice.getValue())) {
+            place = new Place();
+            place.setPlaceName(newPlaceName.getValue().trim());
+            place.setPlaceDescription(newPlaceDescription.getValue().trim());
+            place.setArea(area);
+            place.setPlaceHistory(newPlaceHistory.getValue().trim());
+            place.setPrivatePlace(newPlacePrivate.getValue());
+            placeRepository.save(place);
+        } else {
+            place = placeSelect.getValue();
+        }
+        event.setPlace(place);
+
+        // Dates
+        EventDuration duration = new EventDuration();
+        duration.setStartDate(new CalendarDate(
+                Integer.parseInt(startYear.getValue()),
+                Integer.parseInt(startMonth.getValue()),
+                Integer.parseInt(startDay.getValue())
+        ));
+
+        if (!endDay.isEmpty() && !endMonth.isEmpty() && !endYear.isEmpty()) {
+            duration.setEndDate(new CalendarDate(
+                    Integer.parseInt(endYear.getValue()),
+                    Integer.parseInt(endMonth.getValue()),
+                    Integer.parseInt(endDay.getValue())
+            ));
+        }
+
+        duration.setDuration(
+                duration.calculateDuration(
+                        duration.getStartDate(), duration.getEndDate(), campaign.getCalendar()
+                )
+        );
+        event.setDuration(duration);
+
+        // Reoccurrence
+        event.setReoccurring(reoccurrenceTypeSelect.getValue());
+
+        System.out.println(event);
     }
 
     private VerticalLayout eventTypeEditorForm() {
