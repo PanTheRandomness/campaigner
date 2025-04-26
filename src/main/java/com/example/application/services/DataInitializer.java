@@ -165,7 +165,7 @@ public class DataInitializer {
 
                 EventType eventType2 = new EventType();
                 eventType2.setEventTypeName("Festivals");
-                eventType2.setEventColour("#FF00DDDD");
+                eventType2.setEventColour("#FF00DD");
                 eventTypeRepository.save(eventType2);
 
                 // Create durations

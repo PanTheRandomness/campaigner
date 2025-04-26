@@ -332,7 +332,6 @@ public class CampaignTabsBuilder {
         reoccurrenceTypeSelect.setValue(event.getReoccurring());
     }
 
-
     private VerticalLayout eventEditorForm(Campaign campaign, Grid<Event> eventGrid, VerticalLayout timelineRowLayout, VerticalLayout eventsLayout) {
         Optional<User> maybeUser = authenticatedUser.get();
         User loggedUser = maybeUser.get();
