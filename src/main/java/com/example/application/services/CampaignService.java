@@ -35,6 +35,7 @@ public class CampaignService {
         return calendars;
     }
 
+    // TODO: Check if this is still an issue
     // TODO: Fix world list generation for user to be used in displaying worlds for campaign editing
     public List<World> getWorldsForUser(User user) {
         List<Campaign> campaigns = campaignRepository.findByGms(user);

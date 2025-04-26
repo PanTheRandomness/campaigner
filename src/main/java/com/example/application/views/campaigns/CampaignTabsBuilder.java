@@ -4,6 +4,7 @@ import com.example.application.data.*;
 import com.example.application.data.repositories.*;
 import com.example.application.security.AuthenticatedUser;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -53,9 +54,6 @@ public class CampaignTabsBuilder {
         this.placeRepository = placeRepository;
         this.areaRepository = areaRepository;
         this.authenticatedUser = authenticatedUser;
-
-        // General TODOs
-        // TODO: Add Form to edit Event Types
     }
 
     public TabsAndPages buildTabsAndPages(Campaign campaign) {
@@ -127,13 +125,6 @@ public class CampaignTabsBuilder {
         Hr hr = new Hr();
         VerticalLayout timelineRowLayout = new VerticalLayout(timelineTitle, placeholderParagraph, hr);
 
-        // First Search Field
-        // TODO: Add more event grid filters!
-        TextField searchField = new TextField();
-        searchField.setPlaceholder("Search events...");
-        searchField.setClearButtonVisible(true);
-        searchField.setWidthFull();
-
         // Event Grid
         H3 eventGridTitle = new H3("Campaign Events");
         List<Event> campaignEvents = eventRepository.findByCampaignId(campaign.getId());
@@ -167,12 +158,11 @@ public class CampaignTabsBuilder {
 
         eventGrid.addComponentColumn(event -> {
             Button editButton = new Button("Edit");
-            editButton.addClickListener(e -> {
-                //eventsLayout.setVisible(false);
-                //newEventLayout.setVisible(true);
-                // TODO: Populate edit form if editing
-            });
             Button deleteButton = new Button("Delete");
+            editButton.addClickListener(e -> {
+                // TODO: Add edit functionality
+            });
+
             deleteButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
             deleteButton.addClickListener(e -> {
                 Dialog confirmDialog = new Dialog();
@@ -210,28 +200,15 @@ public class CampaignTabsBuilder {
             return actions;
         }).setHeader("Actions");
 
-        searchField.addValueChangeListener(e -> {
-            String filter = e.getValue().trim().toLowerCase();
-            List<Event> allEvents = eventRepository.findByCampaignId(campaign.getId());
-            List<Event> filtered = allEvents.stream()
-                    .filter(event ->
-                            (event.getName() != null && event.getName().toLowerCase().contains(filter)) ||
-                                    (event.getPlace() != null && event.getPlace().getPlaceName().toLowerCase().contains(filter))
-                    )
-                    .toList();
-            eventGrid.setItems(filtered);
-        });
-
         // Add Event Button // TODO: Show only to Campaign GMs
         Button addEventButton = new Button("Add Event");
 
         // Search fields
-        HorizontalLayout searchLayout = new HorizontalLayout(
-                searchField
-        );
-        searchLayout.setSizeFull();
-        searchLayout.setPadding(false);
-        searchLayout.setSpacing(true);
+        final EventFilters[] filters = new EventFilters[1];
+
+        filters[0] = new EventFilters(() -> {
+            eventGrid.setItems(eventRepository.findAll(filters[0]));
+        });
 
         // Title & add button
         HorizontalLayout eventHeaderLayout = new HorizontalLayout(
@@ -244,9 +221,9 @@ public class CampaignTabsBuilder {
 
         // Grid & header
         VerticalLayout eventsLayout = new VerticalLayout(
-                searchLayout,
                 eventHeaderLayout,
-                eventGrid
+                eventGrid,
+                filters[0] // TODO: Check if works?
         );
 
         VerticalLayout eventForm = eventEditorForm(campaign, eventGrid, timelineRowLayout, eventsLayout);
@@ -269,6 +246,10 @@ public class CampaignTabsBuilder {
         );
 
         return timelineLayout;
+    }
+
+    private void editEvent(Event event, VerticalLayout eventForm) {
+        // TODO: Populate edit form if editing
     }
 
     private VerticalLayout eventEditorForm(Campaign campaign, Grid<Event> eventGrid, VerticalLayout timelineRowLayout, VerticalLayout eventsLayout) {
@@ -721,6 +702,12 @@ public class CampaignTabsBuilder {
         return formLayout;
     }
 
+    private VerticalLayout eventTypeEditorForm() {
+        VerticalLayout layout = new VerticalLayout();
+        // TODO: Add Event Type Editor
+        return layout;
+    }
+
     // TODO: Fix Grid Size!
     private VerticalLayout createPlayersPage(Campaign campaign) {
         VerticalLayout layout = new VerticalLayout();
@@ -774,6 +761,5 @@ public class CampaignTabsBuilder {
             this.pages = pages;
         }
     }
-
 }
 

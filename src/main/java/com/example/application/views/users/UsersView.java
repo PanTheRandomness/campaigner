@@ -50,6 +50,7 @@ public class UsersView extends Composite<VerticalLayout> {
     public UsersView(UserRepository userRepository) {
         this.userRepository = userRepository;
 
+        // TODO: add search
         VerticalLayout layoutColumn2 = new VerticalLayout();
         userGrid = new Grid<>(User.class, false);
         HorizontalLayout layoutRow = new HorizontalLayout();

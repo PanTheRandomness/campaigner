@@ -7,5 +7,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.util.List;
 
 public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
+
     List<Event> findByCampaignId(Long campaignId);
+
+    List<Event> findByCampaignIdAndNameContainingIgnoreCase(Long campaignId, String name);
 }
