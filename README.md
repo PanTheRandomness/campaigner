@@ -37,7 +37,7 @@ ________________________________________________________________________________
 ✅ Tee vielä viides hakuehto suodattimeen: `Events: ReoccurrenceType` <br>
 ✅ Kustomoidun tyylitiedoston lisääminen ja sen käyttäminen luokkamäärittelyllä: `campaigner-custom.css` <br>
 ✅ Selkeästi erityyppisiä sisältösivuja vähintään kolme kappaletta: Edelliset pitää toimia näiden kanssa <br>
-❌ Kustomoitu virheviesti jos user yrittää admin-sivulle <br>
+❓ Kustomoitu virheviesti jos user yrittää admin-sivulle: yritetty<br>
 
 
 <h4>Lisäpisteet: </h4>
